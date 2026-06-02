@@ -132,19 +132,19 @@ body {
   color: var(--fg);
 }
 
-/* ── Trip Card (integrated) ── */
+/* Current Trip Card */
 .trip-card {
   margin: 0 16px 16px;
-  background: var(--surface);
+  background: linear-gradient(145deg, #1F6B5D 0%, #2D8B7A 40%, #3DA392 100%);
   border-radius: var(--r-xl);
-  box-shadow: var(--shadow-m);
+  padding: 0;
+  color: #fff;
+  position: relative;
   overflow: hidden;
 }
 
-.trip-card-header {
-  background: linear-gradient(145deg, #1F6B5D 0%, #2D8B7A 40%, #3DA392 100%);
-  padding: 20px;
-  color: #fff;
+.trip-card-main {
+  padding: 20px 20px 14px;
 }
 
 .trip-card-top {
@@ -190,6 +190,7 @@ body {
 
 .trip-card-stats {
   display: flex;
+  gap: 0;
   justify-content: space-between;
 }
 
@@ -201,238 +202,150 @@ body {
 .trip-stat-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .trip-stat-label { font-size: 10px; opacity: 0.7; margin-top: 2px; }
 
-/* ── Tab bar inside card ── */
+/* In-card config tabs */
 .card-tabs {
   display: flex;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  border-top: 1px solid rgba(255,255,255,0.15);
 }
 
 .card-tab {
   flex: 1;
-  padding: 12px 0;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted);
-  border: none;
+  padding: 10px 0;
   background: none;
-  cursor: pointer;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  font-weight: 500;
   font-family: var(--font);
+  cursor: pointer;
   position: relative;
-  transition: color 0.15s;
+  transition: color 0.2s;
 }
-
 .card-tab.active {
-  color: var(--primary);
+  color: #fff;
+  font-weight: 600;
 }
-
 .card-tab.active::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 16px;
-  right: 16px;
-  height: 2px;
-  background: var(--primary);
-  border-radius: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 2.5px;
+  background: #fff;
+  border-radius: 2px;
 }
 
-/* ── Tab panels ── */
-.tab-panel {
+.card-tab-panel {
   display: none;
-  padding: 16px;
-  background: var(--surface);
+  background: rgba(0,0,0,0.08);
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
+.card-tab-panel.active { display: block; }
 
-.tab-panel.active { display: block; }
-
-/* ── Config items inside panels ── */
-.config-item {
+/* Config items inside card */
+.card-cfg-row {
   display: flex;
   align-items: center;
-  padding: 12px 0;
+  padding: 11px 0;
+  color: #fff;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font);
 }
 
-.config-item + .config-item {
-  border-top: 0.5px solid var(--border);
-}
+.card-cfg-row + .card-cfg-row { border-top: 1px solid rgba(255,255,255,0.08); }
 
-.config-item-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--r-s);
+.card-cfg-row-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-xs);
+  background: rgba(255,255,255,0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
+  margin-right: 10px;
   flex-shrink: 0;
 }
-.config-item-icon svg { width: 16px; height: 16px; }
+.card-cfg-row-icon svg { width: 14px; height: 14px; }
 
-.config-item-body { flex: 1; min-width: 0; }
-.config-item-label { font-size: 14px; color: var(--fg); font-weight: 500; }
-.config-item-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.card-cfg-row-label { flex: 1; font-size: 14px; }
+.card-cfg-row-detail { font-size: 13px; opacity: 0.7; margin-right: 4px; }
+.card-cfg-row-chevron { opacity: 0.5; }
+.card-cfg-row-chevron svg { width: 14px; height: 14px; }
 
-.config-item-right { flex-shrink: 0; margin-left: 8px; display: flex; align-items: center; gap: 8px; }
-.config-item-val { font-size: 13px; color: var(--fg-2); font-variant-numeric: tabular-nums; }
-
-/* Inline input */
-.config-input {
-  width: 80px;
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-s);
-  padding: 0 8px;
-  font-size: 14px;
-  font-family: var(--font);
-  color: var(--fg);
-  background: #F8F8FA;
-  outline: none;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+/* Sub-panel (expandable within card tab) */
+.card-sub-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
 }
-.config-input:focus { border-color: var(--primary); background: var(--surface); }
+.card-sub-panel.open { max-height: 500px; }
 
-/* Toggle */
-.toggle {
-  width: 50px;
-  height: 30px;
-  border-radius: 15px;
-  background: var(--toggle-off);
-  position: relative;
-  cursor: pointer;
-  transition: background 0.25s;
-  flex-shrink: 0;
-  border: none;
-  padding: 0;
-}
-.toggle.on { background: var(--toggle-on); }
+.card-sub-content { padding: 4px 0 10px 38px; }
 
-.toggle::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 26px;
-  height: 26px;
-  border-radius: 13px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  transition: transform 0.25s;
-}
-.toggle.on::after { transform: translateX(20px); }
-
-/* Choice chips */
-.choice-chips {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  padding: 4px 0;
-}
-
-.choice-chip {
-  padding: 6px 14px;
-  border-radius: 16px;
-  font-size: 13px;
-  font-weight: 500;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  color: var(--fg-2);
-  cursor: pointer;
-  transition: all 0.15s;
-  font-family: var(--font);
-}
-.choice-chip.active {
-  border-color: var(--primary);
-  background: var(--primary-light);
-  color: var(--primary);
-}
-
-/* Warning chips */
-.warning-chips {
-  display: flex;
-  gap: 8px;
-}
-
-.warning-chip {
-  padding: 6px 14px;
-  border-radius: var(--r-s);
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font);
-  transition: all 0.15s;
-}
-.warning-chip.active { color: #fff; }
-.warning-chip.inactive { background: #F5F5F5; color: var(--muted); }
-
-/* Member type row */
-.member-type-row {
-  display: flex;
-  align-items: center;
-  padding: 10px 12px;
-  background: #F8F8FA;
-  border-radius: var(--r-m);
-  margin-bottom: 6px;
-}
-.member-type-row:last-child { margin-bottom: 0; }
-
-.mt-name { font-size: 14px; color: var(--fg); width: 50px; font-weight: 500; }
-.mt-weight { flex: 1; font-size: 13px; color: var(--fg-2); }
-.mt-weight-val { font-variant-numeric: tabular-nums; color: var(--primary); font-weight: 600; }
-
-/* Template grid */
-.template-grid {
+/* Template grid inside card */
+.card-template-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-.template-card {
-  background: #F8F8FA;
+.card-template-item {
+  background: rgba(255,255,255,0.12);
   border-radius: var(--r-m);
-  padding: 14px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  border: 1.5px solid transparent;
-  transition: border-color 0.15s, background 0.15s;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: background 0.15s;
 }
-.template-card:active, .template-card.selected { border-color: var(--primary); background: var(--primary-light); }
-
-.template-icon {
-  width: 36px;
-  height: 36px;
+.card-template-item:active { background: rgba(255,255,255,0.2); }
+.card-template-item .tmpl-icon {
+  width: 32px; height: 32px;
   border-radius: var(--r-s);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.template-icon svg { width: 18px; height: 18px; }
+.card-template-item .tmpl-icon svg { width: 16px; height: 16px; }
+.card-template-item .tmpl-name { font-size: 12px; font-weight: 500; }
+.card-template-item .tmpl-budget { font-size: 10px; opacity: 0.65; margin-top: 1px; }
 
-.template-name { font-size: 13px; font-weight: 500; color: var(--fg); }
-.template-budget { font-size: 11px; color: var(--muted); margin-top: 1px; }
-
-/* Currency select */
-.currency-select {
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-s);
-  padding: 0 8px;
-  font-size: 13px;
-  font-family: var(--font);
-  color: var(--fg);
-  background: #F8F8FA;
-  outline: none;
-  cursor: pointer;
+/* Choice chips inside card */
+.card-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 2px 0;
 }
-.currency-select:focus { border-color: var(--primary); }
 
-/* ── Section (for other trips) ── */
+.card-chip {
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+.card-chip.active {
+  border-color: #fff;
+  background: #fff;
+  color: var(--primary);
+}
+
+/* Section */
 .section {
   margin: 0 16px 12px;
 }
@@ -453,7 +366,9 @@ body {
   box-shadow: var(--shadow-s);
 }
 
-/* Trip list items */
+/* Trip list */
+.trip-list { padding: 0; }
+
 .trip-item {
   display: flex;
   align-items: center;
@@ -473,22 +388,16 @@ body {
 .trip-item + .trip-item::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 52px;
-  right: 0;
+  top: 0; left: 52px; right: 0;
   height: 0.5px;
   background: var(--border);
 }
 
 .trip-item-icon {
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border-radius: var(--r-s);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 12px; flex-shrink: 0;
 }
 .trip-item-icon svg { width: 16px; height: 16px; }
 
@@ -498,23 +407,14 @@ body {
 .trip-item-desc { font-size: 12px; color: var(--muted); margin-top: 1px; }
 
 .trip-item-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
 }
 
 .trip-action-btn {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--r-xs);
-  cursor: pointer;
-  color: var(--muted);
+  width: 28px; height: 28px;
+  border: none; background: none;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-xs); cursor: pointer; color: var(--muted);
   transition: all 0.1s;
 }
 .trip-action-btn:active { background: #F5F5F5; }
@@ -527,24 +427,9 @@ body {
   background: #FAFAFA;
 }
 
-.form-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.form-field {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.form-label {
-  font-size: 11px;
-  color: var(--muted);
-  font-weight: 500;
-}
+.form-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.form-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-size: 11px; color: var(--muted); font-weight: 500; }
 
 .form-input {
   height: 36px;
@@ -561,46 +446,29 @@ body {
 .form-input:focus { border-color: var(--primary); }
 
 .form-create-btn {
-  width: 100%;
-  height: 40px;
-  border: none;
-  border-radius: var(--r-m);
-  background: var(--primary);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: opacity 0.15s;
+  width: 100%; height: 40px;
+  border: none; border-radius: var(--r-m);
+  background: var(--primary); color: #fff;
+  font-size: 14px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; transition: opacity 0.15s;
 }
 .form-create-btn:active { opacity: 0.8; }
 
 /* Empty state */
 .empty-state {
-  text-align: center;
-  padding: 32px 16px;
-  color: var(--muted);
+  text-align: center; padding: 32px 16px; color: var(--muted);
 }
-
-.empty-icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 12px;
-  opacity: 0.3;
-}
+.empty-icon { width: 48px; height: 48px; margin: 0 auto 12px; opacity: 0.3; }
 .empty-icon svg { width: 100%; height: 100%; }
-
 .empty-title { font-size: 15px; font-weight: 500; color: var(--fg-2); margin-bottom: 4px; }
 .empty-desc { font-size: 13px; }
 
 /* Home indicator */
 .home-indicator {
   position: absolute;
-  bottom: 6px;
-  left: 50%;
+  bottom: 6px; left: 50%;
   transform: translateX(-50%);
-  width: 134px;
-  height: 5px;
+  width: 134px; height: 5px;
   background: var(--fg);
   border-radius: 3px;
   opacity: 0.2;
@@ -642,19 +510,7 @@ body {
     archive: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>',
     restore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>',
     trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
-    switch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
-  };
-
-  // Icon library for config items
-  var ICO = {
-    wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1"/></svg>',
-    currency: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
-    users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
-    grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
-    target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
-    bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
-    car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
-    calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
+    switchIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
   };
 
   // Header
@@ -663,7 +519,7 @@ body {
     '<div class="nav-title">旅程管理</div>' +
   '</div>';
 
-  // ── Integrated Trip Card with Tabs ──
+  // ── Current Trip Card (with integrated config tabs) ──
   var t = D.trip;
   var budget = t.budget || 0;
   var spent = D.getTotalSpent();
@@ -673,167 +529,174 @@ body {
   var memberCount = D.members.length;
   var perPerson = D.getPerPersonAvg();
 
-  html += '<div class="trip-card">';
-
-  // Card header (green gradient)
-  html += '<div class="trip-card-header">';
-  html += '<div class="trip-card-top">' +
-    '<div class="trip-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>' +
-    '<div class="trip-card-info">' +
-      '<div class="trip-card-name">' + t.name + '</div>' +
-      '<div class="trip-card-meta">' +
-        '<span>' + D.formatDateShort(t.startDate) + ' — ' + D.formatDateShort(t.endDate) + '</span>' +
-        '<span>' + memberCount + '人</span>' +
-        (curDay <= totalDays ? '<span>Day' + curDay + '/' + totalDays + '</span>' : '<span>已结束</span>') +
+  // Card header
+  html += '<div class="trip-card" id="tripConfigCard">' +
+    '<div class="trip-card-main">' +
+      '<div class="trip-card-top">' +
+        '<div class="trip-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>' +
+        '<div class="trip-card-info">' +
+          '<div class="trip-card-name">' + t.name + '</div>' +
+          '<div class="trip-card-meta">' +
+            '<span>' + D.formatDateShort(t.startDate) + ' — ' + D.formatDateShort(t.endDate) + '</span>' +
+            '<span>' + memberCount + '人</span>' +
+            (curDay <= totalDays ? '<span>Day' + curDay + '/' + totalDays + '</span>' : '<span>已结束</span>') +
+          '</div>' +
+        '</div>' +
       '</div>' +
-    '</div>' +
-  '</div>';
-  html += '<div class="trip-card-progress">' +
-    '<div class="trip-progress-bar"><div class="trip-progress-fill" style="width:' + budgetPct + '%"></div></div>' +
-    '<div class="trip-card-stats">' +
-      '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(spent) + '</div><div class="trip-stat-label">已消费</div></div>' +
-      '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(budget - spent) + '</div><div class="trip-stat-label">剩余预算</div></div>' +
-      '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(perPerson) + '</div><div class="trip-stat-label">人均</div></div>' +
-    '</div>' +
-  '</div>';
-  html += '</div>'; // .trip-card-header
+      '<div class="trip-card-progress">' +
+        '<div class="trip-progress-bar"><div class="trip-progress-fill" style="width:' + budgetPct + '%"></div></div>' +
+        '<div class="trip-card-stats">' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(spent) + '</div><div class="trip-stat-label">已消费</div></div>' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(budget - spent) + '</div><div class="trip-stat-label">剩余预算</div></div>' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(perPerson) + '</div><div class="trip-stat-label">人均</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
 
   // Tab bar
   html += '<div class="card-tabs">' +
-    '<button class="card-tab active" data-tab="budget">预算</button>' +
-    '<button class="card-tab" data-tab="members">成员与分摊</button>' +
-    '<button class="card-tab" data-tab="template">旅行模板</button>' +
+    '<button class="card-tab active" data-tab="budget">预算配置</button>' +
+    '<button class="card-tab" data-tab="split">分摊规则</button>' +
+    '<button class="card-tab" data-tab="templates">旅行模板</button>' +
   '</div>';
 
-  // ── Tab 1: 预算 ──
-  html += '<div class="tab-panel active" id="panel-budget">';
+  // ── Tab: 预算配置 ──
+  html += '<div class="card-tab-panel active" data-panel="budget">';
 
-  // Budget mode
-  html += '<div class="config-item">' +
-    '<div class="config-item-icon" style="background:var(--primary-light);color:var(--primary)">' + ICO.target + '</div>' +
-    '<div class="config-item-body"><div class="config-item-label">预算模式</div></div>' +
-    '<div class="config-item-right"><div class="choice-chips">';
-  ['total', 'daily'].forEach(function(m) {
-    html += '<button class="choice-chip' + (S.budgetMode === m ? ' active' : '') + '" data-budget-mode="' + m + '">' + S.budgetModeLabels[m] + '</button>';
+  var budgetModeOpts = [
+    { value: 'total', label: '总预算' },
+    { value: 'daily', label: '分日预算' },
+    { value: 'perPerson', label: '人均预算' }
+  ];
+  html += '<div class="card-cfg-row" id="cfgBudgetMode">' +
+    '<div class="card-cfg-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>' +
+    '<div class="card-cfg-row-label">预算模式</div>' +
+    '<div class="card-cfg-row-detail">' + (S.budgetModeLabels[S.budgetMode] || '总预算') + '</div>' +
+    '<span class="card-cfg-row-chevron">' + IC.chevron + '</span>' +
+  '</div>';
+
+  html += '<div class="card-sub-panel" id="subPanel-budgetMode"><div class="card-sub-content"><div class="card-chips">';
+  budgetModeOpts.forEach(function(o) {
+    html += '<button class="card-chip' + (S.budgetMode === o.value ? ' active' : '') + '" data-budget-mode="' + o.value + '">' + o.label + '</button>';
   });
   html += '</div></div></div>';
 
-  // Budget amount
-  var curObj = S.currencies.find(function(c) { return c.code === S.defaultCurrency; });
-  var curSymbol = curObj ? curObj.symbol : '¥';
-  html += '<div class="config-item">' +
-    '<div class="config-item-icon" style="background:var(--primary-light);color:var(--primary)">' + ICO.wallet + '</div>' +
-    '<div class="config-item-body"><div class="config-item-label">当前旅程预算</div></div>' +
-    '<div class="config-item-right">' +
-      '<span style="font-size:13px;color:var(--muted);margin-right:4px">' + curSymbol + '</span>' +
-      '<input class="config-input" id="tripBudgetInput" type="number" value="' + budget + '" style="width:100px">' +
-    '</div>' +
+  html += '<div class="card-cfg-row" id="cfgBudgetAmount">' +
+    '<div class="card-cfg-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1"/></svg></div>' +
+    '<div class="card-cfg-row-label">当前旅程预算</div>' +
+    '<div class="card-cfg-row-detail">' + (t.currency || '¥') + (budget || 0).toLocaleString() + '</div>' +
   '</div>';
 
-  // Currency
-  html += '<div class="config-item">' +
-    '<div class="config-item-icon" style="background:var(--primary-light);color:var(--primary)">' + ICO.currency + '</div>' +
-    '<div class="config-item-body"><div class="config-item-label">币种</div></div>' +
-    '<div class="config-item-right">' +
-      '<select class="currency-select" id="currencySelect">';
-  S.currencies.forEach(function(c) {
-    html += '<option value="' + c.code + '"' + (c.code === S.defaultCurrency ? ' selected' : '') + '>' + c.symbol + ' ' + c.code + '</option>';
-  });
-  html += '</select></div></div>';
+  var curObj = S.currencies.find(function(c) { return c.code === S.defaultCurrency; });
+  html += '<div class="card-cfg-row" id="cfgCurrency">' +
+    '<div class="card-cfg-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>' +
+    '<div class="card-cfg-row-label">币种</div>' +
+    '<div class="card-cfg-row-detail">' + (curObj ? curObj.name + ' ' + curObj.symbol : 'CNY ¥') + '</div>' +
+    '<span class="card-cfg-row-chevron">' + IC.chevron + '</span>' +
+  '</div>';
 
-  // Budget warnings
-  html += '<div class="config-item" style="flex-direction:column;align-items:flex-start">' +
-    '<div style="display:flex;align-items:center;width:100%;margin-bottom:10px">' +
-      '<div class="config-item-icon" style="background:var(--warning-bg);color:var(--warning)">' + ICO.bell + '</div>' +
-      '<div class="config-item-body"><div class="config-item-label">预算预警</div><div class="config-item-desc">达到阈值时推送提醒</div></div>' +
-    '</div>' +
-    '<div class="warning-chips" style="padding-left:44px">';
+  html += '<div class="card-sub-panel" id="subPanel-currency"><div class="card-sub-content"><div class="card-chips">';
+  S.currencies.forEach(function(c) {
+    html += '<button class="card-chip' + (S.defaultCurrency === c.code ? ' active' : '') + '" data-currency="' + c.code + '">' + c.symbol + ' ' + c.name + '</button>';
+  });
+  html += '</div></div></div>';
+
+  // Budget warning
+  html += '<div class="card-cfg-row" id="cfgBudgetWarn">' +
+    '<div class="card-cfg-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>' +
+    '<div class="card-cfg-row-label">预算预警</div>' +
+    '<div class="card-cfg-row-detail">' + (S.budgetWarning80 ? '80% ' : '') + (S.budgetWarning90 ? '90% ' : '') + (S.budgetWarning100 ? '100%' : '') + '</div>' +
+    '<span class="card-cfg-row-chevron">' + IC.chevron + '</span>' +
+  '</div>';
+
+  html += '<div class="card-sub-panel" id="subPanel-budgetWarn"><div class="card-sub-content"><div class="card-chips">';
   var warningLevels = [
     { key: 'budgetWarning80', label: '80%', color: '#E8A020' },
     { key: 'budgetWarning90', label: '90%', color: '#E05A38' },
     { key: 'budgetWarning100', label: '100%', color: '#D93025' }
   ];
   warningLevels.forEach(function(w) {
-    var active = S[w.key];
-    html += '<button class="warning-chip' + (active ? ' active' : ' inactive') + '" style="' + (active ? 'background:' + w.color : '') + '" data-warning-key="' + w.key + '">' + w.label + (active ? ' 开启' : ' 关闭') + '</button>';
-  });
-  html += '</div></div>';
-
-  html += '</div>'; // #panel-budget
-
-  // ── Tab 2: 成员与分摊 ──
-  html += '<div class="tab-panel" id="panel-members">';
-
-  // Traveler count
-  html += '<div class="config-item">' +
-    '<div class="config-item-icon" style="background:var(--primary-light);color:var(--primary)">' + ICO.users + '</div>' +
-    '<div class="config-item-body"><div class="config-item-label">出行人数</div><div class="config-item-desc">当前旅程共有 ' + D.members.length + ' 位成员</div></div>' +
-    '<div class="config-item-right"><span class="config-item-val">' + D.members.length + '人</span></div>' +
-  '</div>';
-
-  // Split method
-  html += '<div class="config-item">' +
-    '<div class="config-item-icon" style="background:var(--primary-light);color:var(--primary)">' + ICO.grid + '</div>' +
-    '<div class="config-item-body"><div class="config-item-label">分摊方式</div></div>' +
-    '<div class="config-item-right"><div class="choice-chips">';
-  var splitMethods = ['equal', 'weighted', 'actual'];
-  splitMethods.forEach(function(m) {
-    html += '<button class="choice-chip' + (S.defaultSplitRule === m ? ' active' : '') + '" data-split="' + m + '">' + S.splitMethodLabels[m] + '</button>';
+    html += '<button class="card-chip' + (S[w.key] ? ' active' : '') + '" data-warning-key="' + w.key + '">' + w.label + (S[w.key] ? ' ✓' : '') + '</button>';
   });
   html += '</div></div></div>';
 
-  // Member types
-  html += '<div class="config-item" style="flex-direction:column;align-items:flex-start">' +
-    '<div style="display:flex;align-items:center;width:100%;margin-bottom:10px">' +
-      '<div class="config-item-icon" style="background:var(--primary-light);color:var(--primary)">' + ICO.users + '</div>' +
-      '<div class="config-item-body"><div class="config-item-label">成员类型权重</div><div class="config-item-desc">成人、儿童、老人不同分摊权重</div></div>' +
-    '</div>' +
-    '<div style="width:100%;padding-left:0">';
+  html += '</div>'; // end budget tab
+
+  // ── Tab: 分摊规则 ──
+  html += '<div class="card-tab-panel" data-panel="split">';
+
+  html += '<div class="card-cfg-row" id="cfgSplitMethod">' +
+    '<div class="card-cfg-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>' +
+    '<div class="card-cfg-row-label">分摊方式</div>' +
+    '<div class="card-cfg-row-detail">' + (S.splitMethodLabels[S.defaultSplitRule] || '按参与人数') + '</div>' +
+    '<span class="card-cfg-row-chevron">' + IC.chevron + '</span>' +
+  '</div>';
+
+  html += '<div class="card-sub-panel" id="subPanel-splitMethod"><div class="card-sub-content"><div class="card-chips">';
+  S.splitMethods.forEach(function(m) {
+    html += '<button class="card-chip' + (S.defaultSplitRule === m ? ' active' : '') + '" data-split-rule="' + m + '">' + (S.splitMethodLabels[m] || m) + '</button>';
+  });
+  html += '</div></div></div>';
+
+  html += '<div class="card-cfg-row" id="cfgMemberTypes">' +
+    '<div class="card-cfg-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>' +
+    '<div class="card-cfg-row-label">成员类型权重</div>' +
+    '<div class="card-cfg-row-detail">成人/儿童/老人</div>' +
+    '<span class="card-cfg-row-chevron">' + IC.chevron + '</span>' +
+  '</div>';
+
+  html += '<div class="card-sub-panel" id="subPanel-memberTypes"><div class="card-sub-content">';
   S.memberTypes.forEach(function(mt) {
-    html += '<div class="member-type-row"><div class="mt-name">' + mt.name + '</div>' +
-      '<div class="mt-weight">分摊权重 <span class="mt-weight-val">' + mt.weight + 'x</span></div>' +
-      '<button class="toggle' + (mt.enabled ? ' on' : '') + '" data-key="memberType.' + mt.id + '"></button></div>';
+    html += '<div class="card-cfg-row" style="border-bottom:1px solid rgba(255,255,255,0.06)">' +
+      '<div class="card-cfg-row-label" style="flex:1;font-size:13px">' + mt.name + '</div>' +
+      '<div class="card-cfg-row-detail" style="font-size:12px">权重 ' + mt.weight + '</div>' +
+    '</div>';
   });
   html += '</div></div>';
 
-  html += '</div>'; // #panel-members
+  html += '<div class="card-cfg-row" id="cfgDefaultTravelers">' +
+    '<div class="card-cfg-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>' +
+    '<div class="card-cfg-row-label">默认出行人数</div>' +
+    '<div class="card-cfg-row-detail">' + S.defaultTravelers + '人</div>' +
+  '</div>';
 
-  // ── Tab 3: 旅行模板 ──
-  html += '<div class="tab-panel" id="panel-template">';
+  html += '</div>'; // end split tab
 
-  html += '<div style="font-size:13px;color:var(--fg-2);margin-bottom:10px;padding:4px 0">选择预设模板快速配置预算、分摊规则和成员类型</div>';
+  // ── Tab: 旅行模板 ──
+  html += '<div class="card-tab-panel" data-panel="templates">';
 
-  html += '<div class="template-grid">';
-  var tIcons = {
-    'road-trip': ICO.car, 'family': ICO.users, 'couple': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>',
-    'team': ICO.grid, 'overseas': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"/></svg>'
-  };
-  var tColors = {
-    'road-trip': ['var(--primary-light)', 'var(--primary)'],
-    'family': ['var(--price-light)', 'var(--price)'],
-    'couple': ['#FCE4EC', '#C62828'],
-    'team': ['#E3F2FD', '#1565C0'],
-    'overseas': ['#E8F5E9', '#2E7D32']
+  html += '<div class="card-cfg-row" style="margin-bottom:8px;cursor:default">' +
+    '<div class="card-cfg-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>' +
+    '<div class="card-cfg-row-label">选择旅行模板快速创建</div>' +
+  '</div>';
+
+  html += '<div class="card-template-grid">';
+  var tIconMap = {
+    'road-trip': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+    'family': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9.5 15a3.5 3.5 0 005 0"/></svg>',
+    'couple': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>',
+    'team': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+    'overseas': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>'
   };
   S.templates.forEach(function(tmpl) {
-    var tIcon = tIcons[tmpl.id] || ICO.car;
-    var tc = tColors[tmpl.id] || ['var(--primary-light)', 'var(--primary)'];
-    html += '<div class="template-card" data-template-id="' + tmpl.id + '">' +
-      '<div class="template-icon" style="background:' + tc[0] + ';color:' + tc[1] + '">' + tIcon + '</div>' +
-      '<div><div class="template-name">' + tmpl.name + '</div><div class="template-budget">默认预算 ¥' + tmpl.budget.toLocaleString() + '</div></div>' +
+    var ti = tIconMap[tmpl.icon] || tIconMap['road-trip'];
+    html += '<div class="card-template-item" data-template-id="' + tmpl.id + '">' +
+      '<div class="tmpl-icon">' + ti + '</div>' +
+      '<div><div class="tmpl-name">' + tmpl.name + '</div><div class="tmpl-budget">¥' + tmpl.budget.toLocaleString() + '</div></div>' +
     '</div>';
   });
   html += '</div>';
 
-  html += '</div>'; // #panel-template
+  html += '</div>'; // end templates tab
 
-  html += '</div>'; // .trip-card
+  html += '</div>'; // end trip-card
 
-  // ── Other trips ──
+  // ── Other trips list ──
   var allTrips = D.getTrips();
   var activeTrips = D.getActiveTrips();
   var archivedTrips = D.getArchivedTrips();
   var currentId = D.getCurrentTripId();
+
   var otherActiveTrips = activeTrips.filter(function(t) { return t.id !== currentId; });
 
   if (otherActiveTrips.length > 0) {
@@ -853,7 +716,7 @@ body {
           '<div class="trip-item-desc">' + D.formatDateShort(trip.startDate) + ' — ' + D.formatDateShort(trip.endDate) + ' · ' + mCount + '人 · ' + expenseCount + '笔</div>' +
         '</div>' +
         '<div class="trip-item-actions">' +
-          '<button class="trip-action-btn" data-action="switch" data-trip-id="' + trip.id + '" title="切换">' + IC.switch + '</button>' +
+          '<button class="trip-action-btn" data-action="switch" data-trip-id="' + trip.id + '" title="切换">' + IC.switchIcon + '</button>' +
           (allTrips.length > 1 ? '<button class="trip-action-btn danger" data-action="archive" data-trip-id="' + trip.id + '" title="归档">' + IC.archive + '</button>' : '') +
         '</div>' +
       '</div>';
@@ -911,153 +774,136 @@ body {
 
   document.getElementById('mainContent').innerHTML = html;
 
-  // ── Tab switching ──
-  document.querySelectorAll('.card-tab').forEach(function(tab) {
-    tab.addEventListener('click', function () {
+  // ── Interactions ──
+
+  // Card tab switching
+  document.querySelectorAll('.card-tab[data-tab]').forEach(function(tab) {
+    tab.addEventListener('click', function() {
       var tabName = this.getAttribute('data-tab');
-      // Update tabs
       document.querySelectorAll('.card-tab').forEach(function(t) { t.classList.remove('active'); });
       this.classList.add('active');
-      // Update panels
-      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-      var panel = document.getElementById('panel-' + tabName);
+      document.querySelectorAll('.card-tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      var panel = document.querySelector('.card-tab-panel[data-panel="' + tabName + '"]');
       if (panel) panel.classList.add('active');
     });
   });
 
-  // ── Budget mode chips ──
-  document.querySelectorAll('.choice-chip[data-budget-mode]').forEach(function(el) {
-    el.addEventListener('click', function () {
+  // Expand/collapse sub-panels
+  document.querySelectorAll('#tripConfigCard .card-cfg-row[id]').forEach(function(row) {
+    row.addEventListener('click', function() {
+      var id = this.getAttribute('id');
+      var panelMap = {
+        'cfgBudgetMode': 'subPanel-budgetMode',
+        'cfgCurrency': 'subPanel-currency',
+        'cfgBudgetWarn': 'subPanel-budgetWarn',
+        'cfgSplitMethod': 'subPanel-splitMethod',
+        'cfgMemberTypes': 'subPanel-memberTypes'
+      };
+      var subId = panelMap[id];
+      if (!subId) return;
+      var sub = document.getElementById(subId);
+      if (!sub) return;
+      sub.classList.toggle('open');
+    });
+  });
+
+  // Budget mode chips
+  document.querySelectorAll('.card-chip[data-budget-mode]').forEach(function(chip) {
+    chip.addEventListener('click', function(e) {
+      e.stopPropagation();
       var mode = this.getAttribute('data-budget-mode');
       D.updateSetting('budgetMode', mode);
-      document.querySelectorAll('.choice-chip[data-budget-mode]').forEach(function(c) {
-        c.classList.toggle('active', c.getAttribute('data-budget-mode') === mode);
-      });
+      document.querySelectorAll('.card-chip[data-budget-mode]').forEach(function(c) { c.classList.remove('active'); });
+      this.classList.add('active');
+      var detail = document.querySelector('#cfgBudgetMode .card-cfg-row-detail');
+      if (detail) detail.textContent = S.budgetModeLabels[mode];
     });
   });
 
-  // ── Split method chips ──
-  document.querySelectorAll('.choice-chip[data-split]').forEach(function(el) {
-    el.addEventListener('click', function () {
-      var method = this.getAttribute('data-split');
-      D.updateSetting('defaultSplitRule', method);
-      document.querySelectorAll('.choice-chip[data-split]').forEach(function(c) {
-        c.classList.toggle('active', c.getAttribute('data-split') === method);
-      });
+  // Currency chips
+  document.querySelectorAll('.card-chip[data-currency]').forEach(function(chip) {
+    chip.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var code = this.getAttribute('data-currency');
+      D.updateSetting('defaultCurrency', code);
+      document.querySelectorAll('.card-chip[data-currency]').forEach(function(c) { c.classList.remove('active'); });
+      this.classList.add('active');
+      var cur = S.currencies.find(function(c) { return c.code === code; });
+      var detail = document.querySelector('#cfgCurrency .card-cfg-row-detail');
+      if (detail && cur) detail.textContent = cur.name + ' ' + cur.symbol;
     });
   });
 
-  // ── Budget input ──
-  var budgetInput = document.getElementById('tripBudgetInput');
-  if (budgetInput) {
-    budgetInput.addEventListener('change', function () {
-      var val = parseInt(this.value) || 0;
-      if (val >= 0) {
-        D.trip.budget = val;
-        D.saveData();
-      }
+  // Split rule chips
+  document.querySelectorAll('.card-chip[data-split-rule]').forEach(function(chip) {
+    chip.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var rule = this.getAttribute('data-split-rule');
+      D.updateSetting('defaultSplitRule', rule);
+      document.querySelectorAll('.card-chip[data-split-rule]').forEach(function(c) { c.classList.remove('active'); });
+      this.classList.add('active');
+      var detail = document.querySelector('#cfgSplitMethod .card-cfg-row-detail');
+      if (detail) detail.textContent = S.splitMethodLabels[rule] || rule;
     });
-  }
+  });
 
-  // ── Currency select ──
-  var currencySelect = document.getElementById('currencySelect');
-  if (currencySelect) {
-    currencySelect.addEventListener('change', function () {
-      D.updateSetting('defaultCurrency', this.value);
-    });
-  }
-
-  // ── Warning chips ──
-  document.querySelectorAll('.warning-chip[data-warning-key]').forEach(function(el) {
-    el.addEventListener('click', function () {
+  // Budget warning chips
+  document.querySelectorAll('.card-chip[data-warning-key]').forEach(function(chip) {
+    chip.addEventListener('click', function(e) {
+      e.stopPropagation();
       var key = this.getAttribute('data-warning-key');
       var current = D.getSetting(key);
       var newVal = !current;
       D.updateSetting(key, newVal);
       this.classList.toggle('active', newVal);
-      this.classList.toggle('inactive', !newVal);
-      var colorMap = { budgetWarning80: '#E8A020', budgetWarning90: '#E05A38', budgetWarning100: '#D93025' };
-      this.style.background = newVal ? colorMap[key] : '';
-      this.textContent = this.textContent.replace(/ (开启|关闭)$/, '') + (newVal ? ' 开启' : ' 关闭');
+      this.innerHTML = this.innerHTML.replace(/ ✓$/, '') + (newVal ? ' ✓' : '');
     });
   });
 
-  // ── Member type toggles ──
-  document.querySelectorAll('.toggle[data-key]').forEach(function(el) {
-    el.addEventListener('click', function (e) {
+  // Template cards
+  document.querySelectorAll('.card-template-item[data-template-id]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
       e.stopPropagation();
-      var isOn = this.classList.toggle('on');
-      var key = this.getAttribute('data-key');
-      if (key.indexOf('memberType.') === 0) {
-        var typeId = key.replace('memberType.', '');
-        var mt = D.settings.memberTypes.find(function(m) { return m.id === typeId; });
-        if (mt) { mt.enabled = isOn; D.saveData(); }
-      } else {
-        D.updateSetting(key, isOn);
-      }
-    });
-  });
-
-  // ── Template cards ──
-  document.querySelectorAll('.template-card[data-template-id]').forEach(function(el) {
-    el.addEventListener('click', function () {
-      var id = this.getAttribute('data-template-id');
-      var tmpl = S.templates.find(function(t) { return t.id === id; });
+      var tmplId = this.getAttribute('data-template-id');
+      var tmpl = S.templates.find(function(t) { return t.id === tmplId; });
       if (tmpl) {
-        document.querySelectorAll('.template-card').forEach(function(c) { c.classList.remove('selected'); });
-        this.classList.add('selected');
-        // Apply template settings
-        if (tmpl.budget) {
-          D.trip.budget = tmpl.budget;
-          var inp = document.getElementById('tripBudgetInput');
-          if (inp) inp.value = tmpl.budget;
-        }
-        D.saveData();
+        D.createTrip({
+          name: tmpl.name,
+          startDate: new Date().toISOString().slice(0, 10),
+          endDate: new Date(Date.now() + 4 * 86400000).toISOString().slice(0, 10),
+          budget: tmpl.budget
+        });
+        location.href = '01-home.html';
       }
     });
   });
 
-  // ── Trip action buttons ──
+  // Trip action buttons
   document.querySelectorAll('.trip-action-btn[data-action]').forEach(function(el) {
     el.addEventListener('click', function (e) {
       e.stopPropagation();
       var action = this.getAttribute('data-action');
       var tripId = this.getAttribute('data-trip-id');
       if (!tripId || !action) return;
-
-      if (action === 'switch') {
-        D.switchTrip(tripId);
-        location.href = '01-home.html';
-      } else if (action === 'archive') {
-        D.archiveTrip(tripId);
-        location.reload();
-      } else if (action === 'unarchive') {
-        D.unarchiveTrip(tripId);
-        location.reload();
-      } else if (action === 'delete') {
-        if (confirm('确定要删除这个旅程吗？此操作不可撤销。')) {
-          D.deleteTrip(tripId);
-          location.reload();
-        }
-      }
+      if (action === 'switch') { D.switchTrip(tripId); location.href = '01-home.html'; }
+      else if (action === 'archive') { D.archiveTrip(tripId); location.reload(); }
+      else if (action === 'unarchive') { D.unarchiveTrip(tripId); location.reload(); }
+      else if (action === 'delete') { if (confirm('确定要删除这个旅程吗？此操作不可撤销。')) { D.deleteTrip(tripId); location.reload(); } }
     });
   });
 
-  // ── Create trip toggle ──
+  // Create trip trigger
   var createTrigger = document.getElementById('createTripTrigger');
   var createPanel = document.getElementById('createTripPanel');
   if (createTrigger && createPanel) {
     createTrigger.addEventListener('click', function () {
       var isVisible = createPanel.style.display !== 'none';
       createPanel.style.display = isVisible ? 'none' : 'block';
-      if (!isVisible) {
-        var nameInput = document.getElementById('newTripName');
-        if (nameInput) nameInput.focus();
-      }
+      if (!isVisible) { var ni = document.getElementById('newTripName'); if (ni) ni.focus(); }
     });
   }
 
-  // ── Create trip button ──
+  // Create trip button
   var createBtn = document.getElementById('createTripBtn');
   if (createBtn) {
     createBtn.addEventListener('click', function () {
@@ -1065,20 +911,18 @@ body {
       var startDate = document.getElementById('newTripStart').value;
       var endDate = document.getElementById('newTripEnd').value;
       var budgetVal = parseInt(document.getElementById('newTripBudget').value) || 0;
-
       if (!name) { document.getElementById('newTripName').style.borderColor = 'var(--danger)'; return; }
       if (!startDate || !endDate) {
         if (!startDate) document.getElementById('newTripStart').style.borderColor = 'var(--danger)';
         if (!endDate) document.getElementById('newTripEnd').style.borderColor = 'var(--danger)';
         return;
       }
-
       D.createTrip({ name: name, startDate: startDate, endDate: endDate, budget: budgetVal });
       location.href = '01-home.html';
     });
   }
 
-  // Clear validation styling
+  // Clear validation on focus
   ['newTripName', 'newTripStart', 'newTripEnd'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) {

@@ -1,0 +1,550 @@
+
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=393,initial-scale=1">
+<title>旅途账本 · 统计</title>
+<style>
+:root {
+  --primary: #2D8B7A;
+  --primary-light: #E8F5F0;
+  --price: #E05A38;
+  --bg: #F2F2F5;
+  --surface: #FFFFFF;
+  --fg: #1A1D26;
+  --fg-secondary: #5A6072;
+  --muted: #8B92A5;
+  --border: #E5E8EF;
+  --border-light: #F0F1F5;
+  --shadow-sm: 0 1px 2px rgba(26,29,38,0.04);
+  --shadow-md: 0 2px 12px rgba(26,29,38,0.06);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --font: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-number: 'SF Pro Display', 'SF Mono', -apple-system, monospace;
+  --nav-height: 72px;
+  --status-height: 54px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  width: 393px;
+  margin: 0 auto;
+  min-height: 852px;
+  -webkit-font-smoothing: antialiased;
+  color: var(--fg);
+  padding-top: var(--status-height);
+  padding-bottom: var(--nav-height);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Status Bar */
+.status-bar {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  width: 393px; height: var(--status-height);
+  background: var(--surface);
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 28px 8px;
+  z-index: 100;
+}
+.status-bar .time { font-size: 15px; font-weight: 600; }
+.status-bar .icons { display: flex; align-items: center; gap: 6px; }
+.status-bar .icons svg { width: 16px; height: 16px; }
+
+/* Header */
+.header {
+  position: sticky; top: var(--status-height); left: 50%; transform: translateX(-50%);
+  width: 393px; padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg); z-index: 50;
+}
+.header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.header-actions { display: flex; gap: 8px; }
+.header-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; transition: all 0.15s;
+}
+.header-btn:active { transform: scale(0.94); background: var(--border-light); }
+.header-btn svg { width: 18px; height: 18px; stroke: var(--fg-secondary); }
+.badge {
+  position: absolute; top: -3px; right: -3px;
+  min-width: 18px; height: 18px; border-radius: 9px;
+  background: #E05A38; color: #fff; font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 5px; box-shadow: 0 1px 3px rgba(224,90,56,0.3);
+}
+.report-btn {
+  height: 36px; border-radius: 18px; padding: 0 14px;
+  background: var(--primary); color: #fff; border: none;
+  font-size: 13px; font-weight: 600; font-family: var(--font);
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; transition: all 0.15s;
+}
+.report-btn:active { transform: scale(0.95); opacity: 0.9; }
+.report-btn svg { width: 16px; height: 16px; stroke: #fff; }
+
+/* ===== NOTIFICATION PANEL ===== */
+.notif-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.25); z-index: 200;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  display: flex; justify-content: flex-end;
+}
+.notif-overlay.open { opacity: 1; pointer-events: auto; }
+.notif-panel {
+  width: 340px; height: 100vh; background: var(--surface);
+  box-shadow: -8px 0 32px rgba(26,29,38,0.15);
+  transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+  display: flex; flex-direction: column;
+}
+.notif-overlay.open .notif-panel { transform: translateX(0); }
+.notif-panel-header {
+  padding: 20px 20px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0;
+}
+.notif-panel-header h3 { font-size: 17px; font-weight: 700; }
+.notif-mark-all {
+  font-size: 13px; color: var(--primary); font-weight: 500;
+  background: none; border: none; cursor: pointer; padding: 4px 8px;
+  border-radius: 6px; transition: background 0.15s;
+}
+.notif-mark-all:active { background: var(--primary-light); }
+.notif-list {
+  flex: 1; overflow-y: auto; padding: 8px 0;
+}
+.notif-item {
+  padding: 14px 20px;
+  display: flex; gap: 12px;
+  border-bottom: 0.5px solid var(--border-light);
+  cursor: pointer; transition: background 0.15s;
+  position: relative;
+}
+.notif-item:active { background: #F8F9FC; }
+.notif-item.unread { background: #F8FDFB; }
+.notif-dot {
+  position: absolute; left: 8px; top: 20px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--primary);
+  opacity: 0;
+}
+.notif-item.unread .notif-dot { opacity: 1; }
+.notif-icon-wrap {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 16px;
+}
+.notif-icon-wrap.type-budget { background: #FFF0EC; }
+.notif-icon-wrap.type-daily { background: #EDF5FF; }
+.notif-icon-wrap.type-anomaly { background: #FFF8E1; }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.notif-text { font-size: 12px; color: var(--fg-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.notif-empty {
+  padding: 60px 20px; text-align: center;
+  font-size: 14px; color: var(--muted);
+}
+.notif-empty svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.3; }
+
+/* ===== MAIN CONTENT ===== */
+.content { padding: 0 16px 20px; }
+
+/* Summary bar */
+.summary-bar {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+.summary-item {
+  flex: 1; background: var(--surface); border-radius: var(--radius-md);
+  padding: 14px 12px; text-align: center; box-shadow: var(--shadow-sm);
+  border: 0.5px solid var(--border);
+}
+.summary-item .val { font-size: 20px; font-weight: 700; font-family: var(--font-number); letter-spacing: -0.02em; }
+.summary-item .val.price { color: var(--price); }
+.summary-item .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Day tabs */
+.day-tabs-wrap {
+  margin-bottom: 14px; display: flex;
+  overflow-x: auto; gap: 8px; padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+}
+.day-tabs-wrap::-webkit-scrollbar { height: 3px; }
+.day-tabs-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.day-tab {
+  flex-shrink: 0; scroll-snap-align: start;
+  padding: 8px 16px; border-radius: 20px;
+  background: var(--surface); border: 0.5px solid var(--border);
+  font-size: 13px; font-weight: 500; font-family: var(--font);
+  color: var(--fg-secondary); cursor: pointer; transition: all 0.15s;
+  white-space: nowrap; text-align: center; line-height: 1.3;
+}
+.day-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.day-tab .day-num { font-size: 14px; font-weight: 700; display: block; }
+.day-tab .day-date { font-size: 10px; opacity: 0.7; }
+
+/* Section */
+.section { margin-bottom: 16px; }
+.section-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+
+/* Donut chart */
+.donut-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  padding: 16px; box-shadow: var(--shadow-sm); border: 0.5px solid var(--border);
+}
+.donut-row { display: flex; align-items: center; gap: 16px; }
+.donut-visual { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
+.donut-visual svg { width: 140px; height: 140px; transform: rotate(-90deg); }
+.donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+.donut-center .total { font-size: 20px; font-weight: 700; font-family: var(--font-number); color: var(--price); }
+.donut-center .label { font-size: 11px; color: var(--muted); }
+.donut-legend { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.donut-legend-item { display: flex; align-items: center; gap: 8px; }
+.donut-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.donut-legend-name { font-size: 12px; color: var(--fg-secondary); flex: 1; }
+.donut-legend-amount { font-size: 13px; font-weight: 600; font-family: var(--font-number); color: var(--fg); }
+
+/* Bar chart */
+.bar-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  padding: 16px; box-shadow: var(--shadow-sm); border: 0.5px solid var(--border);
+}
+.bar-row { display: flex; align-items: flex-end; gap: 6px; height: 150px; padding: 0 4px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.bar-fill {
+  width: 100%; max-width: 36px; border-radius: 6px 6px 0 0;
+  background: var(--primary); min-height: 4px; transition: height 0.3s;
+}
+.bar-label { font-size: 10px; color: var(--muted); text-align: center; line-height: 1.2; }
+
+/* Ranking */
+.rank-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  padding: 0; box-shadow: var(--shadow-sm); border: 0.5px solid var(--border);
+  overflow: hidden;
+}
+.rank-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+}
+.rank-item + .rank-item { border-top: 0.5px solid var(--border-light); }
+.rank-num { width: 22px; font-size: 14px; font-weight: 700; color: var(--muted); text-align: center; }
+.rank-num.top1 { color: #E05A38; }
+.rank-num.top2 { color: #F59E0B; }
+.rank-num.top3 { color: #3B82F6; }
+.rank-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.rank-name { flex: 1; font-size: 14px; font-weight: 500; }
+.rank-amount { font-size: 15px; font-weight: 700; font-family: var(--font-number); color: var(--price); letter-spacing: -0.02em; }
+
+/* Tab Bar */
+.tab-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 393px; height: var(--nav-height); background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 16px 12px; z-index: 100;
+}
+.tab-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; border: none; background: none; padding: 6px 14px;
+  color: var(--muted); transition: color 0.15s; position: relative;
+}
+.tab-btn.active { color: var(--primary); }
+.tab-btn svg { width: 22px; height: 22px; }
+.tab-btn span { font-size: 10px; font-weight: 500; }
+.tab-indicator {
+  position: absolute; top: -2px; width: 20px; height: 3px;
+  background: var(--primary); border-radius: 2px;
+  opacity: 0; transition: opacity 0.15s;
+}
+.tab-btn.active .tab-indicator { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Status Bar -->
+<div class="status-bar">
+  <span class="time">9:41</span>
+  <span class="icons">
+    <svg viewBox="0 0 20 16"><rect x="1" y="7" width="3" height="8" rx="0.5" fill="#1A1D26"/><rect x="6" y="4" width="3" height="11" rx="0.5" fill="#1A1D26"/><rect x="11" y="1" width="3" height="14" rx="0.5" fill="#1A1D26"/><rect x="16" y="0" width="3" height="15" rx="0.5" fill="#1A1D26"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#1A1D26" stroke-width="1.5"><path d="M17.5 18.5H6.5A4 4 0 012.8 14L1.2 3.8C1.1 3.2 1.5 2.5 2.2 2.5h19.6c.7 0 1.1.7.9 1.3L21.2 14a4 4 0 01-3.7 4.5z"/><circle cx="12" cy="21" r="1.5"/></svg>
+    <svg viewBox="0 0 32 16"><rect x="1" y="2" width="24" height="11" rx="2.5" stroke="#1A1D26" stroke-width="1.5" fill="none"/><rect x="3" y="4" width="20" height="7" rx="1" fill="#1A1D26"/><rect x="27" y="5" width="3" height="6" rx="1" fill="rgba(26,29,38,0.4)"/></svg>
+  </span>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-title">统计分析</div>
+  <div class="header-actions">
+    <button class="header-btn" id="notifBtn" onclick="openNotifications()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 17a2 2 0 01-3.4 0"/></svg>
+      <span class="badge" id="notifBadge">0</span>
+    </button>
+    <button class="report-btn" onclick="location.href='04-summary.html'">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      报告
+    </button>
+  </div>
+</div>
+
+<!-- ===== NOTIFICATION OVERLAY ===== -->
+<div class="notif-overlay" id="notifOverlay" onclick="closeNotifications(event)">
+  <div class="notif-panel" onclick="event.stopPropagation()">
+    <div class="notif-panel-header">
+      <h3>通知</h3>
+      <button class="notif-mark-all" onclick="markAllRead()">全部已读</button>
+    </div>
+    <div class="notif-list" id="notifList"></div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="mainContent"></div>
+
+<!-- Tab Bar -->
+<div class="tab-bar">
+  <button class="tab-btn" onclick="location.href='01-home.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>首页</span>
+  </button>
+  <button class="tab-btn active">
+    <span class="tab-indicator"></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="9" width="7" height="12" rx="1"/></svg>
+    <span>统计</span>
+  </button>
+  <button class="tab-btn" onclick="location.href='05-settings.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M3 12h2m14 0h2m-9-9v2m0 14v2"/><circle cx="5" cy="5" r="1.5"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="19" cy="19" r="1.5"/></svg>
+    <span>我的</span>
+  </button>
+</div>
+
+<script src="../js/trip-data.js"></script>
+<script>
+var D = TripData;
+
+// ===== NOTIFICATIONS =====
+var notifOverlay = document.getElementById('notifOverlay');
+
+function getIconForType(type) {
+  switch(type) {
+    case 'budget': return '💸';
+    case 'daily': return '📊';
+    case 'anomaly': return '⚠️';
+    default: return '🔔';
+  }
+}
+
+function renderNotifications() {
+  var list = D.getNotifications();
+  var container = document.getElementById('notifList');
+  var badge = document.getElementById('notifBadge');
+  var unread = 0;
+  var html = '';
+
+  if (list.length === 0) {
+    html = '<div class="notif-empty"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg><div>暂无通知</div></div>';
+  } else {
+    for (var i = 0; i < list.length; i++) {
+      var n = list[i];
+      if (n.unread) unread++;
+      html += '<div class="notif-item' + (n.unread ? ' unread' : '') + '" onclick="readNotif(\'' + n.id + '\')">' +
+        '<span class="notif-dot"></span>' +
+        '<div class="notif-icon-wrap type-' + n.type + '">' + getIconForType(n.type) + '</div>' +
+        '<div class="notif-body"><div class="notif-title">' + n.title + '</div>' +
+        '<div class="notif-text">' + n.body + '</div>' +
+        '<div class="notif-time">' + n.time + '</div></div></div>';
+    }
+  }
+  container.innerHTML = html;
+
+  if (unread > 0) {
+    badge.textContent = unread > 99 ? '99+' : unread;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function openNotifications() {
+  renderNotifications();
+  notifOverlay.classList.add('open');
+}
+
+function closeNotifications(e) {
+  if (e && e.target !== notifOverlay) return;
+  notifOverlay.classList.remove('open');
+  renderNotifications();
+}
+
+function readNotif(id) {
+  D.markNotificationRead(id);
+  renderNotifications();
+}
+
+function markAllRead() {
+  D.markAllNotificationsRead();
+  renderNotifications();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') notifOverlay.classList.remove('open');
+});
+
+// ===== MAIN CONTENT =====
+var activeDay = null;
+
+function render(dayFilter) {
+  var trip = D.trip;
+  var expenses = D.expenses;
+  var categories = D.categories;
+  var members = D.members;
+  var tc = document.getElementById('mainContent');
+
+  // Summary bar
+  var html = '<div class="summary-bar">' +
+    '<div class="summary-item"><div class="val price">¥' + trip.totalSpent.toLocaleString() + '</div><div class="lbl">总消费</div></div>' +
+    '<div class="summary-item"><div class="val">¥' + trip.perPersonSpent.toLocaleString() + '</div><div class="lbl">人均</div></div>' +
+    '<div class="summary-item"><div class="val">' + trip.budgetRate + '%</div><div class="lbl">预算执行</div></div>' +
+    '</div>';
+
+  // Day tabs
+  var totalDays = trip.totalDays;
+  html += '<div class="day-tabs-wrap" id="dayTabs">';
+  for (var d = 1; d <= totalDays; d++) {
+    var isActive = (dayFilter === d) || (!dayFilter && d === trip.currentDay);
+    html += '<div class="day-tab' + (isActive ? ' active' : '') + '" onclick="selectDay(' + d + ')">' +
+      '<span class="day-num">Day ' + d + '</span>' +
+      '<span class="day-date">' + D.dayNumToName(d) + '</span></div>';
+  }
+  html += '</div>';
+
+  // Filter expenses for selected day
+  var activeD = dayFilter || trip.currentDay;
+  var filteredExpenses = [];
+  for (var i = 0; i < expenses.length; i++) {
+    if (expenses[i].day === activeD) filteredExpenses.push(expenses[i]);
+  }
+
+  // Category breakdown
+  var catBreak = D.getCategoryBreakdown();
+  var totalSpentAll = trip.totalSpent;
+  var donutParts = [];
+  var donutColors = [];
+  var cumulative = 0;
+  for (var j = 0; j < catBreak.length; j++) {
+    if (catBreak[j].amount > 0 && totalSpentAll > 0) {
+      var pct = catBreak[j].amount / totalSpentAll;
+      donutParts.push({ cat: catBreak[j], pct: pct, start: cumulative });
+      donutColors.push(catBreak[j].color);
+      cumulative += pct;
+    }
+  }
+
+  // Donut SVG
+  var donutR = 52;
+  var donutCx = 70, donutCy = 70;
+  var donutCircumference = 2 * Math.PI * donutR;
+
+  html += '<div class="section"><h3 class="section-title">消费结构</h3>' +
+    '<div class="donut-card"><div class="donut-row">' +
+    '<div class="donut-visual"><svg viewBox="0 0 140 140">';
+
+  var strokeW = 18;
+  // Background circle
+  html += '<circle cx="' + donutCx + '" cy="' + donutCy + '" r="' + donutR + '" fill="none" stroke="#F0F1F5" stroke-width="' + strokeW + '"/>';
+
+  for (var k = 0; k < donutParts.length; k++) {
+    var dashLen = donutParts[k].pct * donutCircumference;
+    var dashGap = donutCircumference - dashLen;
+    var offset = -donutParts[k].start * donutCircumference;
+    html += '<circle cx="' + donutCx + '" cy="' + donutCy + '" r="' + donutR + '" fill="none" stroke="' + donutParts[k].cat.color + '" stroke-width="' + strokeW + '" stroke-dasharray="' + dashLen + ' ' + dashGap + '" stroke-dashoffset="' + offset + '" stroke-linecap="butt" opacity="0.9"/>';
+  }
+
+  html += '</svg><div class="donut-center"><div class="total">¥' + totalSpentAll.toLocaleString() + '</div><div class="label">总支出</div></div></div>';
+
+  // Legend
+  html += '<div class="donut-legend">';
+  var topCats = catBreak.slice(0, 6);
+  for (var m = 0; m < topCats.length; m++) {
+    var ct = topCats[m];
+    html += '<div class="donut-legend-item"><div class="donut-legend-dot" style="background:' + ct.color + '"></div><span class="donut-legend-name">' + ct.icon + ' ' + ct.name + '</span><span class="donut-legend-amount">¥' + ct.amount.toLocaleString() + '</span></div>';
+  }
+  html += '</div></div></div></div>';
+
+  // Daily trend bar chart
+  var daily = D.getDailyBreakdown();
+  var maxDaily = 0;
+  for (var n = 0; n < daily.length; n++) {
+    if (daily[n].total > maxDaily) maxDaily = daily[n].total;
+  }
+  html += '<div class="section"><h3 class="section-title">每日趋势</h3>' +
+    '<div class="bar-card"><div class="bar-row">';
+  for (var o = 0; o < daily.length; o++) {
+    var h = maxDaily > 0 ? (daily[o].total / maxDaily * 120) : 4;
+    var isActiveDay = daily[o].day === activeD;
+    html += '<div class="bar-col"><div class="bar-fill" style="height:' + Math.max(h,4) + 'px; background:' + (isActiveDay ? 'var(--price)' : 'var(--primary)') + '"></div><div class="bar-label">' + daily[o].day + '日</div></div>';
+  }
+  html += '</div></div></div>';
+
+  // Member ranking
+  var memberRank = D.getMemberRanking();
+  html += '<div class="section"><h3 class="section-title">人均排行</h3><div class="rank-card">';
+  for (var p = 0; p < memberRank.length; p++) {
+    var mr = memberRank[p];
+    var topClass = p === 0 ? ' top1' : (p === 1 ? ' top2' : (p === 2 ? ' top3' : ''));
+    html += '<div class="rank-item"><span class="rank-num' + topClass + '">' + (p+1) + '</span>' +
+      '<div class="rank-avatar" style="background:' + mr.color + '">' + mr.name[0] + '</div>' +
+      '<span class="rank-name">' + mr.name + '</span>' +
+      '<span class="rank-amount">¥' + mr.amount.toLocaleString() + '</span></div>';
+  }
+  html += '</div></div>';
+
+  // Day detail
+  if (filteredExpenses.length > 0) {
+    html += '<div class="section"><h3 class="section-title">Day ' + activeD + ' · ' + D.dayNumToName(activeD) + ' 明细</h3><div class="rank-card">';
+    for (var q = 0; q < filteredExpenses.length; q++) {
+      var ex = filteredExpenses[q];
+      var cate = null;
+      for (var r = 0; r < categories.length; r++) { if (categories[r].id === ex.categoryId) { cate = categories[r]; break; } }
+      var pids = ex.participantIds || [];
+      var pp = pids.length ? Math.round(ex.amount / pids.length) : ex.amount;
+      html += '<div class="rank-item"><span style="font-size:11px;color:var(--muted);width:36px">' + ex.time + '</span>' +
+        '<span style="font-size:14px;margin-right:6px">' + (cate ? cate.icon : '📌') + '</span>' +
+        '<span class="rank-name">' + (cate ? cate.name : '其他') + ' · ' + ex.location + '</span>' +
+        '<span class="rank-amount">¥' + ex.amount + '<span style="font-size:10px;color:var(--muted);font-weight:400"> /人¥' + pp + '</span></span></div>';
+    }
+    html += '<div style="padding:12px 14px;border-top:0.5px solid var(--border-light);font-size:11px;color:var(--muted)">' +
+      filteredExpenses.length + '笔消费 · ' + (function(){var ppl={};for(var s=0;s<filteredExpenses.length;s++){var ps=filteredExpenses[s].participantIds||[];for(var t=0;t<ps.length;t++)ppl[ps[t]]=true;}return Object.keys(ppl).length;})() + '人参与</div>';
+    html += '</div></div>';
+  }
+
+  tc.innerHTML = html;
+
+  // Scroll day tabs
+  var activeTab = document.querySelector('.day-tab.active');
+  if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  renderNotifications();
+}
+
+function selectDay(dayNum) {
+  activeDay = dayNum;
+  render(dayNum);
+}
+
+render();
+</script>
+</body>
+</html>

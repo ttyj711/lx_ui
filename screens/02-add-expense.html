@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>旅途账本 — 记一笔</title>
+<style>
+:root {
+  --bg: #F2F2F5;
+  --surface: #FFFFFF;
+  --fg: #1D1D1F;
+  --fg-2: #6E7179;
+  --muted: #A0A4AE;
+  --border: #E5E5EA;
+  --primary: #2D8B7A;
+  --primary-light: #E6F3F0;
+  --primary-dark: #1F6B5D;
+  --price: #E05A38;
+  --price-light: #FDF0EC;
+  --success: #34A853;
+  --danger: #D93025;
+  --shadow-s: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-m: 0 2px 8px rgba(0,0,0,0.07);
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 16px;
+  --r-xl: 20px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 393px;
+  height: 852px;
+  background: #000;
+  border-radius: 50px;
+  padding: 12px;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic-island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 126px;
+  height: 36px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+.status-bar {
+  height: 54px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+  flex-shrink: 0;
+}
+
+.status-bar .time { letter-spacing: 0.02em; font-size: 16px; }
+.status-bar .right { display: flex; align-items: center; gap: 5px; }
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.nav-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--primary);
+}
+
+.nav-back svg { width: 20px; height: 20px; }
+.nav-title { font-size: 17px; font-weight: 600; color: var(--fg); }
+
+.nav-action {
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 16px 32px;
+}
+.content::-webkit-scrollbar { display: none; }
+
+.amount-section {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: 24px 20px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-s);
+}
+
+.amount-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+
+.amount-display {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.amount-currency { font-size: 26px; font-weight: 600; color: var(--fg); }
+
+.amount-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-cursor {
+  width: 2px;
+  height: 38px;
+  background: var(--primary);
+  border-radius: 1px;
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+.amount-per-person {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--primary);
+  background: var(--primary-light);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+}
+
+.amount-per-person svg { width: 14px; height: 14px; }
+
+.section-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+.categories {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 4px 8px;
+  border-radius: var(--r-m);
+  background: var(--surface);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-s);
+}
+
+.category-item.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.category-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-icon svg { width: 18px; height: 18px; }
+
+.category-text {
+  font-size: 11px;
+  color: var(--fg-2);
+  font-weight: 500;
+}
+
+.category-item.selected .category-text {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.category-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 4px 8px;
+  border-radius: var(--r-m);
+  background: var(--surface);
+  border: 1.5px dashed var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-s);
+  color: var(--muted);
+}
+
+.category-add:active { opacity: 0.7; }
+.category-add svg { width: 18px; height: 18px; }
+.category-add span { font-size: 11px; font-weight: 500; }
+
+.form-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  box-shadow: var(--shadow-s);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.form-row:last-child { border-bottom: none; }
+
+.form-label { font-size: 14px; color: var(--fg-2); width: 56px; flex-shrink: 0; }
+
+.form-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--fg);
+  text-align: right;
+  background: transparent;
+}
+
+.form-input::placeholder { color: var(--muted); }
+
+.form-arrow { color: var(--muted); margin-left: 6px; flex-shrink: 0; }
+.form-arrow svg { width: 14px; height: 14px; }
+
+.participants-section {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-s);
+  margin-bottom: 12px;
+}
+
+.participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.participants-title { font-size: 14px; font-weight: 600; color: var(--fg); }
+
+.participants-toggle {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.participants-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.person-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 20px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  font-size: 13px;
+  color: var(--fg-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+
+.person-chip.selected {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+
+.person-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.person-tag {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--border);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.person-chip-add {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: none;
+  border: 1.5px dashed var(--border);
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+
+.person-chip-add:active { opacity: 0.7; }
+.person-chip-add svg { width: 14px; height: 14px; }
+
+.receipt-section {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-s);
+  margin-bottom: 24px;
+}
+
+.receipt-label { font-size: 14px; font-weight: 600; color: var(--fg); margin-bottom: 10px; }
+
+.receipt-area {
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r-m);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.receipt-area:hover { border-color: var(--primary); }
+.receipt-area svg { width: 28px; height: 28px; color: var(--muted); }
+.receipt-text { font-size: 13px; color: var(--muted); }
+.receipt-hint { font-size: 11px; color: var(--muted); opacity: 0.7; }
+
+.submit-btn {
+  width: 100%;
+  height: 50px;
+  border-radius: 25px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(45,139,122,0.3);
+  transition: transform 0.15s, opacity 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.submit-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+/* Add-member inline form */
+.add-member-form {
+  display: none;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--primary-light);
+  border-radius: var(--r-m);
+  gap: 8px;
+  align-items: center;
+}
+
+.add-member-form.show { display: flex; }
+
+.add-member-input {
+  flex: 1;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-s);
+  padding: 0 10px;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--fg);
+  background: #fff;
+  outline: none;
+}
+
+.add-member-input:focus { border-color: var(--primary); }
+
+.add-member-tag {
+  padding: 4px 8px;
+  border-radius: var(--r-s);
+  font-size: 11px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--fg-2);
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.add-member-tag.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.add-member-confirm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.add-member-confirm svg { width: 16px; height: 16px; }
+
+.home-indicator {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  opacity: 0.2;
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="right">
+        <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1D1D1F"/><rect x="4.5" y="5" width="3" height="7" rx="0.5" fill="#1D1D1F"/><rect x="9" y="2" width="3" height="10" rx="0.5" fill="#1D1D1F"/><rect x="13.5" y="0" width="2.5" height="12" rx="0.5" fill="#1D1D1F" opacity="0.3"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 3.6C9.8 3.6 11.4 4.3 12.6 5.5" stroke="#1D1D1F" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M8 6.4C9 6.4 9.9 6.8 10.5 7.5" stroke="#1D1D1F" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="8" cy="10" r="1.2" fill="#1D1D1F"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12"><rect x="0.5" y="1" width="21" height="10" rx="2.5" stroke="#1D1D1F" stroke-width="0.8" fill="none"/><rect x="2" y="2.5" width="15" height="7" rx="1.2" fill="#1D1D1F"/><rect x="22.5" y="4" width="2.5" height="4" rx="1" fill="#1D1D1F" opacity="0.4"/></svg>
+      </span>
+    </div>
+
+    <div class="nav-bar">
+      <button class="nav-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="nav-title">记一笔</span>
+      <button class="nav-action">草稿箱</button>
+    </div>
+
+    <div class="content" id="mainContent"></div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+<script src="../js/trip-data.js"></script>
+<script>
+(function () {
+  var D = TripData;
+  var currentAmount = 380;
+  var selectedCategory = 'food';
+  var selectedMembers = D.members.map(function (m) { return m.id; });
+  var newMemberTag = 'adult';
+
+  function render() {
+    var memberCount = selectedMembers.length;
+    var perPerson = memberCount > 0 ? Math.round(currentAmount / memberCount) : 0;
+
+    var html = '';
+
+    // Amount
+    html += '<div class="amount-section">' +
+      '<div class="amount-label">消费金额</div>' +
+      '<div class="amount-display"><span class="amount-currency">¥</span>' +
+      '<span class="amount-value">' + currentAmount + '</span>' +
+      '<span class="amount-cursor"></span></div>' +
+      '<div class="amount-per-person" id="perPersonLabel">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>' +
+        (memberCount > 0 ? memberCount + '人参与 · 人均 ¥' + perPerson : '请选择参与成员') +
+      '</div></div>';
+
+    // Categories (dynamic from data model)
+    var cats = D.getVisibleCategories();
+    html += '<div class="section-label">消费分类</div><div class="categories" id="categoriesGrid">';
+    cats.forEach(function (cat) {
+      var sel = cat.id === selectedCategory ? ' selected' : '';
+      html += '<div class="category-item' + sel + '" data-cat="' + cat.id + '">' +
+        '<div class="category-icon" style="background:' + cat.bgColor + ';color:' + cat.color + '">' + D.getIcon(cat.id) + '</div>' +
+        '<span class="category-text">' + cat.name + '</span></div>';
+    });
+    // Add category button
+    html += '<div class="category-add" id="addCatBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>添加</span></div>';
+    html += '</div>';
+
+    // Form
+    var now = new Date();
+    var dateStr = '今天 ' + (now.getMonth() + 1) + '月' + now.getDate() + '日 ' +
+      ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+
+    html += '<div class="form-card">' +
+      '<div class="form-row"><span class="form-label">地点</span>' +
+        '<input class="form-input" type="text" placeholder="输入消费地点..." />' +
+        '<span class="form-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>' +
+      '<div class="form-row"><span class="form-label">日期</span>' +
+        '<input class="form-input" type="text" value="' + dateStr + '" />' +
+        '<span class="form-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>' +
+      '<div class="form-row"><span class="form-label">备注</span>' +
+        '<input class="form-input" type="text" placeholder="添加备注..." /></div></div>';
+
+    // Participants (dynamic from data model)
+    var allSelected = selectedMembers.length === D.members.length;
+    html += '<div class="participants-section">' +
+      '<div class="participants-header"><span class="participants-title">参与成员</span>' +
+        '<button class="participants-toggle" id="toggleAll">' + (allSelected ? '取消全选' : '选择全部') + '</button></div>' +
+      '<div class="participants-list" id="membersList">';
+
+    D.members.forEach(function (m) {
+      var sel = selectedMembers.indexOf(m.id) !== -1 ? ' selected' : '';
+      var tagLabel = D.TAG_LABELS[m.tag] || '';
+      html += '<div class="person-chip' + sel + '" data-mid="' + m.id + '">' +
+        '<span class="person-avatar" style="background:' + m.color + '">' + m.name.charAt(0) + '</span>' +
+        m.name +
+        (tagLabel && m.tag !== 'adult' ? '<span class="person-tag">' + tagLabel + '</span>' : '') +
+        '</div>';
+    });
+
+    // Add member button
+    html += '<button class="person-chip-add" id="addMemberBtn">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+      '添加</button>';
+    html += '</div>';
+
+    // Inline add-member form
+    html += '<div class="add-member-form" id="addMemberForm">' +
+      '<input class="add-member-input" id="newMemberName" type="text" placeholder="姓名" maxlength="10" />' +
+      '<button class="add-member-tag' + (newMemberTag === 'adult' ? ' active' : '') + '" data-tag="adult">成人</button>' +
+      '<button class="add-member-tag' + (newMemberTag === 'child' ? ' active' : '') + '" data-tag="child">儿童</button>' +
+      '<button class="add-member-tag' + (newMemberTag === 'elder' ? ' active' : '') + '" data-tag="elder">老人</button>' +
+      '<button class="add-member-confirm" id="confirmAddMember"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>' +
+      '</div></div>';
+
+    // Receipt
+    html += '<div class="receipt-section"><div class="receipt-label">小票照片</div>' +
+      '<div class="receipt-area">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
+        '<span class="receipt-text">点击上传小票照片</span>' +
+        '<span class="receipt-hint">支持拍照或从相册选择</span>' +
+      '</div></div>';
+
+    // Submit
+    html += '<button class="submit-btn">保存记录</button>';
+
+    document.getElementById('mainContent').innerHTML = html;
+    bindEvents();
+  }
+
+  function bindEvents() {
+    // Category selection
+    document.querySelectorAll('.category-item').forEach(function (el) {
+      el.addEventListener('click', function () {
+        selectedCategory = el.getAttribute('data-cat');
+        document.querySelectorAll('.category-item').forEach(function (c) { c.classList.remove('selected'); });
+        el.classList.add('selected');
+      });
+    });
+
+    // Member toggles
+    document.querySelectorAll('.person-chip[data-mid]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var mid = parseInt(el.getAttribute('data-mid'));
+        var idx = selectedMembers.indexOf(mid);
+        if (idx !== -1) { selectedMembers.splice(idx, 1); el.classList.remove('selected'); }
+        else { selectedMembers.push(mid); el.classList.add('selected'); }
+        updatePerPerson();
+        updateToggleText();
+      });
+    });
+
+    // Toggle all
+    document.getElementById('toggleAll').addEventListener('click', function () {
+      var allSel = selectedMembers.length === D.members.length;
+      if (allSel) { selectedMembers = []; }
+      else { selectedMembers = D.members.map(function (m) { return m.id; }); }
+      render();
+    });
+
+    // Add member
+    document.getElementById('addMemberBtn').addEventListener('click', function () {
+      var form = document.getElementById('addMemberForm');
+      form.classList.toggle('show');
+      if (form.classList.contains('show')) {
+        document.getElementById('newMemberName').focus();
+      }
+    });
+
+    // Tag selection in add-member form
+    document.querySelectorAll('.add-member-tag').forEach(function (el) {
+      el.addEventListener('click', function () {
+        newMemberTag = el.getAttribute('data-tag');
+        document.querySelectorAll('.add-member-tag').forEach(function (t) { t.classList.remove('active'); });
+        el.classList.add('active');
+      });
+    });
+
+    // Confirm add member
+    document.getElementById('confirmAddMember').addEventListener('click', function () {
+      var name = document.getElementById('newMemberName').value.trim();
+      if (!name) return;
+      var newId = D.addMember(name, newMemberTag);
+      selectedMembers.push(newId);
+      render();
+    });
+
+    // Add category (simple prompt-based for prototype)
+    var addCatBtn = document.getElementById('addCatBtn');
+    if (addCatBtn) {
+      addCatBtn.addEventListener('click', function () {
+        var name = prompt('输入新分类名称：');
+        if (name && name.trim()) {
+          D.addCategory(name.trim());
+          selectedCategory = D.categories[D.categories.length - 1].id;
+          render();
+        }
+      });
+    }
+  }
+
+  function updatePerPerson() {
+    var count = selectedMembers.length;
+    var perPerson = count > 0 ? Math.round(currentAmount / count) : 0;
+    var label = document.getElementById('perPersonLabel');
+    if (label) {
+      label.innerHTML = count > 0
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>' + count + '人参与 \xB7 人均 \xA5' + perPerson
+        : '请选择参与成员';
+    }
+  }
+
+  function updateToggleText() {
+    var btn = document.getElementById('toggleAll');
+    if (btn) {
+      btn.textContent = selectedMembers.length === D.members.length ? '取消全选' : '选择全部';
+    }
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>

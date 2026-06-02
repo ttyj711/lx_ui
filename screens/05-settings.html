@@ -1,0 +1,1385 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>旅途账本 — 设置</title>
+<style>
+:root {
+  --bg: #F2F2F5;
+  --surface: #FFFFFF;
+  --fg: #1D1D1F;
+  --fg-2: #6E7179;
+  --muted: #A0A4AE;
+  --border: #E5E5EA;
+  --primary: #2D8B7A;
+  --primary-light: #E6F3F0;
+  --primary-dark: #1F6B5D;
+  --price: #E05A38;
+  --price-light: #FDF0EC;
+  --success: #34A853;
+  --success-bg: #E6F4EA;
+  --warning: #E8A020;
+  --warning-bg: #FEF7E0;
+  --danger: #D93025;
+  --danger-bg: #FCE8E6;
+  --shadow-s: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-m: 0 2px 8px rgba(0,0,0,0.07);
+  --r-xs: 6px;
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 16px;
+  --r-xl: 20px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', system-ui, sans-serif;
+  --toggle-on: #34C759;
+  --toggle-off: #E5E5EA;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 393px;
+  height: 852px;
+  background: #000;
+  border-radius: 50px;
+  padding: 12px;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic-island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 126px;
+  height: 36px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+.status-bar {
+  height: 54px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+  flex-shrink: 0;
+}
+
+.status-bar .time { letter-spacing: 0.02em; font-size: 16px; }
+.status-bar .right { display: flex; align-items: center; gap: 5px; }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 100px;
+  -webkit-overflow-scrolling: touch;
+}
+.content::-webkit-scrollbar { display: none; }
+
+/* Header */
+.nav-header {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px 14px;
+  gap: 10px;
+}
+
+.nav-back {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  cursor: pointer;
+  border-radius: 50%;
+}
+.nav-back:active { background: var(--primary-light); }
+.nav-back svg { width: 20px; height: 20px; }
+
+.nav-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+/* Profile Card */
+.profile-card {
+  margin: 0 16px 16px;
+  background: linear-gradient(145deg, #1F6B5D 0%, #2D8B7A 40%, #3DA392 100%);
+  border-radius: var(--r-xl);
+  padding: 18px 20px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 26px;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.profile-avatar svg { width: 26px; height: 26px; }
+
+.profile-info { flex: 1; min-width: 0; }
+.profile-name { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.profile-sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+
+.profile-arrow { opacity: 0.5; }
+.profile-arrow svg { width: 16px; height: 16px; }
+
+/* Section */
+.section {
+  margin: 0 16px 12px;
+}
+
+.section-header {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 4px 6px;
+}
+
+.section-group {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  overflow: hidden;
+  box-shadow: var(--shadow-s);
+}
+
+/* Row */
+.row {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  min-height: 48px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.row:active { background: #F8F8FA; }
+
+.row + .row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 52px;
+  right: 0;
+  height: 0.5px;
+  background: var(--border);
+}
+
+.row-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.row-icon svg { width: 16px; height: 16px; }
+
+.row-content { flex: 1; min-width: 0; }
+
+.row-label {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--fg);
+}
+
+.row-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.row-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.row-detail {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.row-chevron svg { width: 14px; height: 14px; color: #C7C7CC; }
+
+/* Toggle */
+.toggle {
+  width: 50px;
+  height: 30px;
+  border-radius: 15px;
+  background: var(--toggle-off);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s;
+  flex-shrink: 0;
+  border: none;
+  padding: 0;
+}
+.toggle.on { background: var(--toggle-on); }
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: transform 0.25s;
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* Expandable Panel */
+.expand-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: #FAFAFA;
+}
+.expand-panel.open { max-height: 600px; }
+
+.expand-content { padding: 10px 16px 14px; }
+
+/* Card config item */
+.card-config {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: var(--r-m);
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-s);
+}
+
+.card-config:last-child { margin-bottom: 0; }
+
+.card-config-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.card-config-icon svg { width: 14px; height: 14px; }
+
+.card-config-label { flex: 1; font-size: 14px; color: var(--fg); }
+
+.card-config .toggle { width: 44px; height: 26px; border-radius: 13px; }
+.card-config .toggle::after { width: 22px; height: 22px; border-radius: 11px; top: 2px; left: 2px; }
+.card-config .toggle.on::after { transform: translateX(18px); }
+
+.card-config .drag-handle {
+  width: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: 8px;
+  cursor: grab;
+  opacity: 0.3;
+}
+.card-config .drag-handle span {
+  display: block;
+  height: 2px;
+  background: var(--fg);
+  border-radius: 1px;
+}
+
+/* Theme color picker */
+.color-picker {
+  display: flex;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.color-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s;
+}
+.color-dot:active { transform: scale(0.9); }
+.color-dot.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Choice chips */
+.choice-chips {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  flex-wrap: wrap;
+}
+
+.choice-chip {
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.choice-chip.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+/* Template grid */
+.template-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.template-card {
+  background: var(--surface);
+  border-radius: var(--r-m);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-s);
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: border-color 0.15s;
+}
+.template-card:active { border-color: var(--primary); }
+
+.template-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.template-icon svg { width: 18px; height: 18px; }
+
+.template-name { font-size: 13px; font-weight: 500; color: var(--fg); }
+.template-budget { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+/* Currency row */
+.currency-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: var(--r-m);
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-s);
+}
+.currency-row:last-child { margin-bottom: 0; }
+
+.currency-code { font-size: 15px; font-weight: 600; color: var(--fg); width: 40px; }
+.currency-name { flex: 1; font-size: 13px; color: var(--fg-2); }
+.currency-rate { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Member type row */
+.member-type-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: var(--r-m);
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-s);
+}
+.member-type-row:last-child { margin-bottom: 0; }
+
+.mt-name { font-size: 14px; color: var(--fg); width: 50px; }
+.mt-weight { flex: 1; font-size: 13px; color: var(--fg-2); }
+.mt-weight-val { font-variant-numeric: tabular-nums; color: var(--primary); font-weight: 600; }
+
+/* Warning chips */
+.warning-chips {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.warning-chip {
+  padding: 6px 14px;
+  border-radius: var(--r-s);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+.warning-chip.active { color: #fff; }
+.warning-chip.inactive { background: #F5F5F5; color: var(--muted); }
+
+/* Footer */
+.settings-footer {
+  text-align: center;
+  padding: 24px 16px 40px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.settings-footer span { color: var(--primary); }
+
+/* Tab Bar */
+.tab-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 82px;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 6px;
+  z-index: 80;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 4px 16px;
+  font-family: var(--font);
+  position: relative;
+}
+
+.tab-item.active { color: var(--primary); }
+.tab-item.active::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+
+.tab-item svg { width: 22px; height: 22px; }
+.tab-label { font-weight: 500; }
+
+.home-indicator {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  opacity: 0.2;
+}
+
+/* Expand toggle */
+.expand-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 500;
+  gap: 4px;
+  background: none;
+  border: none;
+  width: 100%;
+  font-family: var(--font);
+}
+.expand-toggle svg {
+  width: 14px; height: 14px;
+  transition: transform 0.25s;
+}
+.expand-toggle.open svg { transform: rotate(180deg); }
+
+/* Current Trip Card */
+.trip-card {
+  margin: 0 16px 16px;
+  background: linear-gradient(145deg, #1F6B5D 0%, #2D8B7A 40%, #3DA392 100%);
+  border-radius: var(--r-xl);
+  padding: 20px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.trip-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.trip-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-m);
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.trip-card-icon svg { width: 20px; height: 20px; }
+
+.trip-card-info { flex: 1; min-width: 0; }
+.trip-card-name { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trip-card-meta { font-size: 12px; opacity: 0.8; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 6px; }
+.trip-card-meta span { display: inline-flex; align-items: center; gap: 3px; }
+
+.trip-card-switch {
+  padding: 5px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.trip-card-switch:active { background: rgba(255,255,255,0.3); }
+
+.trip-card-progress {
+  margin-top: 2px;
+}
+
+.trip-progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.trip-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: #fff;
+  transition: width 0.3s;
+}
+
+.trip-card-stats {
+  display: flex;
+  gap: 0;
+  justify-content: space-between;
+}
+
+.trip-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.trip-stat-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.trip-stat-label { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+/* Trip list */
+.trip-list {
+  padding: 0;
+}
+
+.trip-item {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  min-height: 48px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.1s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font);
+}
+.trip-item:active { background: #F8F8FA; }
+
+.trip-item + .trip-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 52px;
+  right: 0;
+  height: 0.5px;
+  background: var(--border);
+}
+
+.trip-item-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.trip-item-icon svg { width: 16px; height: 16px; }
+
+.trip-item-info { flex: 1; min-width: 0; }
+.trip-item-name { font-size: 15px; color: var(--fg); font-weight: 400; }
+.trip-item-name.active-trip { color: var(--primary); font-weight: 600; }
+.trip-item-desc { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.trip-item-badge {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.badge-active { background: var(--primary-light); color: var(--primary); }
+.badge-archived { background: #F5F5F5; color: var(--muted); }
+
+.trip-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.trip-action-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.1s;
+}
+.trip-action-btn:active { background: #F5F5F5; }
+.trip-action-btn svg { width: 14px; height: 14px; }
+.trip-action-btn.danger:active { color: var(--danger); }
+
+/* Create trip form */
+.create-trip-form {
+  padding: 14px 16px;
+  background: #FAFAFA;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.form-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.form-input {
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-s);
+  padding: 0 10px;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--fg);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--primary); }
+
+.form-create-btn {
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: var(--r-m);
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.form-create-btn:active { opacity: 0.8; }
+
+/* No trips state */
+.no-trips {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="right">
+        <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1D1D1F"/><rect x="4.5" y="5" width="3" height="7" rx="0.5" fill="#1D1D1F"/><rect x="9" y="2" width="3" height="10" rx="0.5" fill="#1D1D1F"/><rect x="13.5" y="0" width="2.5" height="12" rx="0.5" fill="#1D1D1F" opacity="0.3"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 3.6C9.8 3.6 11.4 4.3 12.6 5.5" stroke="#1D1D1F" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M8 6.4C9 6.4 9.9 6.8 10.5 7.5" stroke="#1D1D1F" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="8" cy="10" r="1.2" fill="#1D1D1F"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12"><rect x="0.5" y="1" width="21" height="10" rx="2.5" stroke="#1D1D1F" stroke-width="0.8" fill="none"/><rect x="2" y="2.5" width="15" height="7" rx="1.2" fill="#1D1D1F"/><rect x="22.5" y="4" width="2.5" height="4" rx="1" fill="#1D1D1F" opacity="0.4"/></svg>
+      </span>
+    </div>
+
+    <div class="content" id="mainContent"></div>
+
+    <div class="tab-bar">
+      <button class="tab-item" onclick="location.href='01-home.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">首页</span>
+      </button>
+      <button class="tab-item" onclick="location.href='02-add-expense.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="tab-label">账单</span>
+      </button>
+      <button class="tab-item" onclick="location.href='03-statistics.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="tab-label">统计</span>
+      </button>
+      <button class="tab-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">我的</span>
+      </button>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+<script src="../js/trip-data.js"></script>
+<script>
+(function () {
+  var D = TripData;
+  var S = D.settings;
+  var html = '';
+
+  // SVG icon library
+  var IC = {
+    chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+    wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1"/></svg>',
+    currency: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+    users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+    grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+    chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    layout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>',
+    brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 014 4 4 4 0 01-4 4"/><path d="M12 2a4 4 0 00-4 4 4 4 0 004 4"/><path d="M12 10v12"/><path d="M8 14h8"/><path d="M7 18h10"/><circle cx="12" cy="6" r="1"/></svg>',
+    cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>',
+    palette: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2"/><circle cx="17.5" cy="10.5" r="2"/><circle cx="8.5" cy="7.5" r="2"/><circle cx="6.5" cy="12.5" r="2"/><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10a2 2 0 002-2c0-.61-.23-1.16-.61-1.59A2 2 0 0114.7 16H16a6 6 0 006-6c0-4.42-4.03-8-10-8z"/></svg>',
+    car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>',
+    plane: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
+    baby: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9.5 15a3.5 3.5 0 005 0"/></svg>',
+    building: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+    scan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>',
+    type: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+  };
+
+  function row(icon, label, detail, opts) {
+    opts = opts || {};
+    var hasChevron = opts.chevron !== false && !opts.toggle && !opts.panel;
+    var cls = opts.className || '';
+    var desc = opts.desc ? '<div class="row-desc">' + opts.desc + '</div>' : '';
+    var right = '';
+    if (opts.toggle !== undefined) {
+      right = '<button class="toggle' + (opts.toggle ? ' on' : '') + '" data-key="' + opts.toggleKey + '"></button>';
+    } else if (opts.panel) {
+      right = '<button class="expand-toggle' + (opts.panelOpen ? ' open' : '') + '" data-panel="' + opts.panelId + '">' + (opts.panelOpen ? '收起' : '展开') + ' ' + IC.chevron + '</button>';
+    } else {
+      right = (detail ? '<span class="row-detail">' + detail + '</span>' : '') +
+              (hasChevron ? '<span class="row-chevron">' + IC.chevron + '</span>' : '');
+    }
+    return '<div class="row' + (opts.panel ? ' expand-trigger' : '') + ' ' + cls + '" data-panel-id="' + (opts.panelId || '') + '">' +
+      '<div class="row-icon" style="background:' + (opts.bg || 'var(--primary-light)') + ';color:' + (opts.fg || 'var(--primary)') + '">' + icon + '</div>' +
+      '<div class="row-content"><div class="row-label">' + label + '</div>' + desc + '</div>' +
+      '<div class="row-right">' + right + '</div></div>';
+  }
+
+  // ── Current Trip Card ──
+  function renderTripCard() {
+    var t = D.trip;
+    var budget = t.budget || 0;
+    var spent = D.getTotalSpent();
+    var budgetPct = budget > 0 ? Math.min(Math.round(spent / budget * 100), 100) : 0;
+    var curDay = D.getCurrentDayNumber();
+    var totalDays = D.getTotalDays();
+    var memberCount = D.members.length;
+    var perPerson = D.getPerPersonAvg();
+
+    return '<div class="trip-card" id="currentTripCard">' +
+      '<div class="trip-card-top">' +
+        '<div class="trip-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>' +
+        '<div class="trip-card-info">' +
+          '<div class="trip-card-name">' + t.name + '</div>' +
+          '<div class="trip-card-meta">' +
+            '<span>' + D.formatDateShort(t.startDate) + ' — ' + D.formatDateShort(t.endDate) + '</span>' +
+            '<span>' + memberCount + '人</span>' +
+            (curDay <= totalDays ? '<span>Day' + curDay + '/' + totalDays + '</span>' : '<span>已结束</span>') +
+          '</div>' +
+        '</div>' +
+        '<button class="trip-card-switch" id="switchTripBtn">切换</button>' +
+      '</div>' +
+      '<div class="trip-card-progress">' +
+        '<div class="trip-progress-bar"><div class="trip-progress-fill" style="width:' + budgetPct + '%"></div></div>' +
+        '<div class="trip-card-stats">' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(spent) + '</div><div class="trip-stat-label">已消费</div></div>' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(budget - spent) + '</div><div class="trip-stat-label">剩余预算</div></div>' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(perPerson) + '</div><div class="trip-stat-label">人均</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  html += renderTripCard();
+
+  // ── Trip Management ──
+  html += '<div class="section"><div class="section-header">旅程管理</div><div class="section-group">';
+
+  var allTrips = D.getTrips();
+  var activeTrips = D.getActiveTrips();
+  var archivedTrips = D.getArchivedTrips();
+  var currentId = D.getCurrentTripId();
+
+  // Active trips
+  activeTrips.forEach(function (trip) {
+    var isCurrent = trip.id === currentId;
+    var days = 0;
+    try { days = Math.round((new Date(trip.endDate) - new Date(trip.startDate)) / 86400000) + 1; } catch(e) {}
+    var expenseCount = trip.expenses ? trip.expenses.length : 0;
+    var memberCount = trip.members ? trip.members.length : 0;
+
+    html += '<div class="trip-item" data-trip-id="' + trip.id + '">' +
+      '<div class="trip-item-icon" style="background:var(--primary-light);color:var(--primary)">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+      '</div>' +
+      '<div class="trip-item-info">' +
+        '<div class="trip-item-name' + (isCurrent ? ' active-trip' : '') + '">' + trip.name + '</div>' +
+        '<div class="trip-item-desc">' + D.formatDateShort(trip.startDate) + ' — ' + D.formatDateShort(trip.endDate) + ' · ' + memberCount + '人 · ' + expenseCount + '笔</div>' +
+      '</div>' +
+      (isCurrent ? '<span class="trip-item-badge badge-active">当前</span>' : '') +
+      '<div class="trip-item-actions">' +
+        (!isCurrent ? '<button class="trip-action-btn" data-action="switch" data-trip-id="' + trip.id + '" title="切换"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>' : '') +
+        (allTrips.length > 1 ? '<button class="trip-action-btn danger" data-action="archive" data-trip-id="' + trip.id + '" title="归档"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg></button>' : '') +
+      '</div>' +
+    '</div>';
+  });
+
+  // Archived trips
+  if (archivedTrips.length > 0) {
+    html += '<div style="padding:8px 16px 4px"><span style="font-size:11px;color:var(--muted);font-weight:500">已归档</span></div>';
+    archivedTrips.forEach(function (trip) {
+      html += '<div class="trip-item" data-trip-id="' + trip.id + '">' +
+        '<div class="trip-item-icon" style="background:#F5F5F5;color:var(--muted)">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>' +
+        '</div>' +
+        '<div class="trip-item-info">' +
+          '<div class="trip-item-name" style="color:var(--muted)">' + trip.name + '</div>' +
+          '<div class="trip-item-desc">已归档</div>' +
+        '</div>' +
+        '<div class="trip-item-actions">' +
+          '<button class="trip-action-btn" data-action="unarchive" data-trip-id="' + trip.id + '" title="恢复"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></button>' +
+          '<button class="trip-action-btn danger" data-action="delete" data-trip-id="' + trip.id + '" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>' +
+        '</div>' +
+      '</div>';
+    });
+  }
+
+  // Create new trip button
+  html += '<div class="trip-item" id="createTripTrigger" style="color:var(--primary)">' +
+    '<div class="trip-item-icon" style="background:var(--primary-light);color:var(--primary)">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+    '</div>' +
+    '<div class="trip-item-info"><div class="trip-item-name" style="color:var(--primary);font-weight:500">创建新旅程</div></div>' +
+  '</div>';
+
+  html += '</div></div>';
+
+  // Create trip expandable panel
+  html += '<div class="section"><div class="expand-panel" id="panel-createTrip"><div class="expand-content">' +
+    '<div class="create-trip-form">' +
+      '<div class="form-row"><div class="form-field" style="flex:2"><div class="form-label">旅程名称</div><input class="form-input" id="newTripName" type="text" placeholder="如：东京自由行5日游"></div></div>' +
+      '<div class="form-row"><div class="form-field"><div class="form-label">开始日期</div><input class="form-input" id="newTripStart" type="date"></div><div class="form-field"><div class="form-label">结束日期</div><input class="form-input" id="newTripEnd" type="date"></div></div>' +
+      '<div class="form-row"><div class="form-field" style="flex:1"><div class="form-label">预算 (元)</div><input class="form-input" id="newTripBudget" type="number" placeholder="10000"></div></div>' +
+      '<button class="form-create-btn" id="createTripBtn">创建旅程</button>' +
+    '</div>' +
+  '</div></div></div>';
+
+  // ── 旅程默认 ──
+  html += '<div class="section"><div class="section-header">旅程默认</div><div class="section-group">';
+  html += row(IC.wallet, '默认预算', '¥' + S.defaultBudget.toLocaleString(), { chevron: true });
+  var curObj = S.currencies.find(function(c) { return c.code === S.defaultCurrency; });
+  html += row(IC.currency, '默认货币', curObj ? curObj.name + ' ' + curObj.symbol : 'CNY ¥', { chevron: true });
+  html += row(IC.users, '默认出行人数', S.defaultTravelers + '人', { chevron: true });
+  html += row(IC.grid, '默认分摊规则', S.splitMethodLabels[S.defaultSplitRule], { chevron: true });
+  html += row(IC.car, '旅行模板', '', { chevron: true, panel: true, panelId: 'templates', panelOpen: false,
+    desc: '自驾游、亲子游、情侣游…' });
+  html += '</div></div>';
+
+  // Template panel
+  html += '<div class="section"><div class="expand-panel" id="panel-templates"><div class="expand-content"><div class="template-grid">';
+  S.templates.forEach(function(t) {
+    var tIcon = IC[t.icon] || IC.car;
+    var tColors = { 'road-trip': ['var(--primary-light)', 'var(--primary)'], 'family': ['var(--price-light)', 'var(--price)'],
+      'couple': ['#FCE4EC', '#C62828'], 'team': ['#E3F2FD', '#1565C0'], 'overseas': ['#E8F5E9', '#2E7D32'] };
+    var tc = tColors[t.id] || ['var(--primary-light)', 'var(--primary)'];
+    html += '<div class="template-card"><div class="template-icon" style="background:' + tc[0] + ';color:' + tc[1] + '">' + tIcon + '</div>' +
+      '<div><div class="template-name">' + t.name + '</div><div class="template-budget">¥' + t.budget.toLocaleString() + '</div></div></div>';
+  });
+  html += '</div></div></div></div>';
+
+  // ── 成员与分摊 ──
+  html += '<div class="section"><div class="section-header">成员与分摊</div><div class="section-group">';
+  html += row(IC.grid, '分摊方式', S.splitMethodLabels[S.defaultSplitRule], { chevron: true });
+  html += row(IC.users, '成员类型', '', { chevron: true, panel: true, panelId: 'memberTypes', panelOpen: false,
+    desc: '成人、儿童、老人不同权重' });
+  html += '</div></div>';
+
+  // Member types panel
+  html += '<div class="section"><div class="expand-panel" id="panel-memberTypes"><div class="expand-content">';
+  S.memberTypes.forEach(function(mt) {
+    html += '<div class="member-type-row"><div class="mt-name">' + mt.name + '</div>' +
+      '<div class="mt-weight">权重 <span class="mt-weight-val">' + mt.weight + '</span></div>' +
+      '<button class="toggle' + (mt.enabled ? ' on' : '') + '" data-key="memberType.' + mt.id + '"></button></div>';
+  });
+  html += '</div></div></div>';
+
+  // ── 消费分类 ──
+  html += '<div class="section"><div class="section-header">消费分类</div><div class="section-group">';
+  html += row(IC.edit, '分类管理', D.categories.length + '个分类', { chevron: true, panel: true, panelId: 'categories', panelOpen: false,
+    desc: '新增、修改、删除和排序分类' });
+  html += '</div></div>';
+
+  // Categories panel
+  html += '<div class="section"><div class="expand-panel" id="panel-categories"><div class="expand-content">';
+  D.categories.forEach(function(cat) {
+    var catIcon = D.getIcon(cat.id);
+    html += '<div class="card-config"><div class="card-config-icon" style="background:' + cat.bgColor + ';color:' + cat.color + '">' + catIcon + '</div>' +
+      '<div class="card-config-label">' + cat.name + '</div>' +
+      '<button class="toggle' + (cat.visible ? ' on' : '') + '" data-key="category.' + cat.id + '"></button></div>';
+  });
+  html += '</div></div></div>';
+
+  // ── 预算管理 ──
+  html += '<div class="section"><div class="section-header">预算管理</div><div class="section-group">';
+  html += row(IC.target, '预算模式', S.budgetModeLabels[S.budgetMode], { chevron: true });
+  html += row(IC.bell, '预算预警', '', { chevron: true, panel: true, panelId: 'budgetWarning', panelOpen: false,
+    desc: '达到80%、90%或超出预算时提醒' });
+  html += '</div></div>';
+
+  // Budget warning panel
+  html += '<div class="section"><div class="expand-panel" id="panel-budgetWarning"><div class="expand-content"><div class="warning-chips">';
+  var warningLevels = [
+    { key: 'budgetWarning80', label: '80%', color: '#E8A020' },
+    { key: 'budgetWarning90', label: '90%', color: '#E05A38' },
+    { key: 'budgetWarning100', label: '100%', color: '#D93025' }
+  ];
+  warningLevels.forEach(function(w) {
+    var active = S[w.key];
+    html += '<button class="warning-chip' + (active ? ' active' : ' inactive') + '" style="' + (active ? 'background:' + w.color : '') + '" data-warning-key="' + w.key + '">' + w.label + (active ? ' 开启' : '') + '</button>';
+  });
+  html += '</div></div></div></div>';
+
+  // ── 货币与汇率 ──
+  html += '<div class="section"><div class="section-header">货币与汇率</div><div class="section-group">';
+  html += row(IC.globe, '多币种', S.currencies.length + '种货币', { chevron: true, panel: true, panelId: 'currencies', panelOpen: false });
+  html += row(IC.currency, '汇率换算', S.autoExchangeRate ? '自动获取' : '手动设置', { chevron: true });
+  html += row(IC.chart, '金额显示', S.currencyDisplayLabels[S.currencyDisplay], { chevron: true });
+  html += '</div></div>';
+
+  // Currencies panel
+  html += '<div class="section"><div class="expand-panel" id="panel-currencies"><div class="expand-content">';
+  S.currencies.forEach(function(c) {
+    html += '<div class="currency-row"><div class="currency-code">' + c.code + '</div>' +
+      '<div class="currency-name">' + c.name + '</div>' +
+      '<div class="currency-rate">' + c.symbol + ' 1 = ¥' + c.rate + '</div></div>';
+  });
+  html += '</div></div></div>';
+
+  // ── 记账设置 ──
+  html += '<div class="section"><div class="section-header">记账设置</div><div class="section-group">';
+  html += row(IC.edit, '自动记录时间', '', { toggle: S.autoRecordTime, toggleKey: 'autoRecordTime' });
+  html += row(IC.globe, '自动获取位置', '', { toggle: S.autoGetLocation, toggleKey: 'autoGetLocation' });
+  html += row(IC.grid, '自动选择分类', '', { toggle: S.autoSelectCategory, toggleKey: 'autoSelectCategory' });
+  html += row(IC.users, '自动计算分摊', '', { toggle: S.autoCalculateSplit, toggleKey: 'autoCalculateSplit' });
+  html += row(IC.scan, '小票识别 (OCR)', '', { toggle: S.ocrEnabled, toggleKey: 'ocrEnabled',
+    desc: '拍照自动识别消费信息' });
+  html += '</div></div>';
+
+  // ── 行程设置 ──
+  html += '<div class="section"><div class="section-header">行程设置</div><div class="section-group">';
+  html += row(IC.calendar, '日程命名', S.dayNamingLabels[S.dayNaming], { chevron: true });
+  html += row(IC.edit, '长途旅行滚动', '', { toggle: S.longTripScroll, toggleKey: 'longTripScroll',
+    desc: '30天以上行程支持横向滚动切换' });
+  html += '</div></div>';
+
+  // ── 首页布局 ──
+  html += '<div class="section"><div class="section-header">首页布局</div><div class="section-group">';
+  html += row(IC.layout, '仪表盘配置', '', { chevron: true, panel: true, panelId: 'dashboardCards', panelOpen: false,
+    desc: '自由选择和排序首页数据卡片' });
+  html += '</div></div>';
+
+  // Dashboard cards panel
+  html += '<div class="section"><div class="expand-panel" id="panel-dashboardCards"><div class="expand-content">';
+  S.dashboardCards.forEach(function(card) {
+    var cardColors = {
+      totalSpent: ['var(--primary-light)', 'var(--primary)'],
+      todaySpent: ['var(--price-light)', 'var(--price)'],
+      perPerson: ['#E3F2FD', '#1565C0'],
+      remainBudget: ['var(--success-bg)', 'var(--success)'],
+      totalCount: ['#F3E5F5', '#7B1FA2'],
+      budgetRate: ['var(--warning-bg)', 'var(--warning)'],
+      tripProgress: ['#E8F5E9', '#2E7D32']
+    };
+    var cc = cardColors[card.id] || ['var(--primary-light)', 'var(--primary)'];
+    html += '<div class="card-config"><div class="drag-handle"><span></span><span></span><span></span></div>' +
+      '<div class="card-config-icon" style="background:' + cc[0] + ';color:' + cc[1] + '">' + IC.chart + '</div>' +
+      '<div class="card-config-label">' + card.label + '</div>' +
+      '<button class="toggle' + (card.visible ? ' on' : '') + '" data-key="dashboardCard.' + card.id + '"></button></div>';
+  });
+  html += '</div></div></div>';
+
+  // ── 统计分析 ──
+  html += '<div class="section"><div class="section-header">统计分析</div><div class="section-group">';
+  html += row(IC.chart, '统计模块配置', '', { chevron: true, panel: true, panelId: 'statsModules', panelOpen: false,
+    desc: '选择需要展示的统计维度' });
+  html += '</div></div>';
+
+  // Stats modules panel
+  html += '<div class="section"><div class="expand-panel" id="panel-statsModules"><div class="expand-content">';
+  S.statsModules.forEach(function(mod) {
+    html += '<div class="card-config"><div class="card-config-icon" style="background:var(--primary-light);color:var(--primary)">' + IC.chart + '</div>' +
+      '<div class="card-config-label">' + mod.label + '</div>' +
+      '<button class="toggle' + (mod.visible ? ' on' : '') + '" data-key="statsModule.' + mod.id + '"></button></div>';
+  });
+  html += '</div></div></div>';
+
+  // ── 智能助手 ──
+  html += '<div class="section"><div class="section-header">智能助手</div><div class="section-group">';
+  html += row(IC.brain, '消费日报', '', { toggle: S.dailyReport, toggleKey: 'dailyReport',
+    desc: '每日自动生成消费总结' });
+  html += row(IC.calendar, '每周消费总结', '', { toggle: S.weeklySummary, toggleKey: 'weeklySummary' });
+  html += row(IC.edit, '旅程结束报告', '', { toggle: S.tripEndReport, toggleKey: 'tripEndReport',
+    desc: 'AI 自动生成完整旅行账单分析' });
+  html += row(IC.bell, '超预算提醒', '', { toggle: S.overBudgetAlert, toggleKey: 'overBudgetAlert' });
+  html += row(IC.shield, '异常消费提醒', '', { toggle: S.abnormalSpendingAlert, toggleKey: 'abnormalSpendingAlert',
+    desc: '检测异常高额消费' });
+  html += '</div></div>';
+
+  // ── 数据管理 ──
+  html += '<div class="section"><div class="section-header">数据管理</div><div class="section-group">';
+  html += row(IC.cloud, '云端同步', '', { toggle: S.cloudSync, toggleKey: 'cloudSync' });
+  html += row(IC.shield, '自动备份', '', { toggle: S.autoBackup, toggleKey: 'autoBackup' });
+  html += row(IC.calendar, '上次备份', S.lastBackupDate, { chevron: false });
+  html += row(IC.download, '导入导出', '', { chevron: true,
+    desc: 'Excel、PDF、长图分享' });
+  html += '</div></div>';
+
+  // ── 个性化 ──
+  html += '<div class="section"><div class="section-header">个性化</div><div class="section-group">';
+  html += row(IC.moon, '深色模式', S.themeLabels[S.theme], { chevron: true, panel: true, panelId: 'themeSelect', panelOpen: false });
+  html += row(IC.palette, '主题颜色', '', { chevron: true, panel: true, panelId: 'themeColor', panelOpen: false });
+  html += row(IC.layout, '卡片样式', S.cardStyleLabels[S.cardStyle], { chevron: true });
+  html += row(IC.chart, '图表风格', S.chartStyleLabels[S.chartStyle], { chevron: true });
+  html += row(IC.type, '字体大小', S.fontSizeLabels[S.fontSize], { chevron: true });
+  html += '</div></div>';
+
+  // Theme select panel
+  html += '<div class="section"><div class="expand-panel" id="panel-themeSelect"><div class="expand-content"><div class="choice-chips">';
+  ['light', 'dark', 'system'].forEach(function(t) {
+    html += '<button class="choice-chip' + (S.theme === t ? ' active' : '') + '" data-theme="' + t + '">' + S.themeLabels[t] + '</button>';
+  });
+  html += '</div></div></div></div>';
+
+  // Theme color panel
+  html += '<div class="section"><div class="expand-panel" id="panel-themeColor"><div class="expand-content"><div class="color-picker">';
+  S.themeColors.forEach(function(c) {
+    html += '<button class="color-dot' + (S.themeColor === c ? ' active' : '') + '" style="background:' + c + '" data-color="' + c + '"></button>';
+  });
+  html += '</div></div></div></div>';
+
+  // ── Footer ──
+  html += '<div class="settings-footer">旅途账本 · <span>v1.0.0</span></div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+
+  // ── Interactions ──
+
+  // Toggle switches
+  document.querySelectorAll('.toggle[data-key]').forEach(function(el) {
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOn = this.classList.toggle('on');
+      var key = this.getAttribute('data-key');
+      // Handle nested keys
+      if (key.indexOf('memberType.') === 0) {
+        var typeId = key.replace('memberType.', '');
+        var mt = S.memberTypes.find(function(m) { return m.id === typeId; });
+        if (mt) { mt.enabled = isOn; D.saveData(); }
+      } else if (key.indexOf('category.') === 0) {
+        var catId = key.replace('category.', '');
+        D.toggleCategoryVisibility(catId);
+      } else if (key.indexOf('dashboardCard.') === 0) {
+        var cardId = key.replace('dashboardCard.', '');
+        D.toggleDashboardCard(cardId);
+      } else if (key.indexOf('statsModule.') === 0) {
+        var modId = key.replace('statsModule.', '');
+        D.toggleStatsModule(modId);
+      } else {
+        D.updateSetting(key, isOn);
+      }
+    });
+  });
+
+  // Expand panels
+  document.querySelectorAll('.expand-trigger').forEach(function(el) {
+    el.addEventListener('click', function () {
+      var panelId = this.getAttribute('data-panel-id');
+      if (!panelId) return;
+      var panel = document.getElementById('panel-' + panelId);
+      if (!panel) return;
+      var isOpen = panel.classList.toggle('open');
+      var toggleBtn = this.querySelector('.expand-toggle');
+      if (toggleBtn) {
+        toggleBtn.classList.toggle('open', isOpen);
+        toggleBtn.innerHTML = (isOpen ? '收起' : '展开') + ' ' + IC.chevron;
+      }
+    });
+  });
+
+  // Theme chips
+  document.querySelectorAll('.choice-chip[data-theme]').forEach(function(el) {
+    el.addEventListener('click', function () {
+      var theme = this.getAttribute('data-theme');
+      D.updateSetting('theme', theme);
+      document.querySelectorAll('.choice-chip[data-theme]').forEach(function(c) {
+        c.classList.toggle('active', c.getAttribute('data-theme') === theme);
+      });
+    });
+  });
+
+  // Color dots
+  document.querySelectorAll('.color-dot[data-color]').forEach(function(el) {
+    el.addEventListener('click', function () {
+      var color = this.getAttribute('data-color');
+      D.updateSetting('themeColor', color);
+      document.querySelectorAll('.color-dot[data-color]').forEach(function(d) {
+        d.classList.toggle('active', d.getAttribute('data-color') === color);
+      });
+    });
+  });
+
+  // Warning chips
+  document.querySelectorAll('.warning-chip[data-warning-key]').forEach(function(el) {
+    el.addEventListener('click', function () {
+      var key = this.getAttribute('data-warning-key');
+      var current = D.getSetting(key);
+      var newVal = !current;
+      D.updateSetting(key, newVal);
+      this.classList.toggle('active', newVal);
+      this.classList.toggle('inactive', !newVal);
+      var colorMap = { budgetWarning80: '#E8A020', budgetWarning90: '#E05A38', budgetWarning100: '#D93025' };
+      this.style.background = newVal ? colorMap[key] : '';
+      this.textContent = this.textContent.replace(/ 开启$/, '') + (newVal ? ' 开启' : '');
+    });
+  });
+
+  // ── Trip management interactions ──
+
+  // Switch trip button on trip card
+  var switchBtn = document.getElementById('switchTripBtn');
+  if (switchBtn) {
+    switchBtn.addEventListener('click', function () {
+      var tripSection = document.querySelector('.section .section-group');
+      if (tripSection) {
+        tripSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+
+  // Trip action buttons (switch, archive, unarchive, delete)
+  document.querySelectorAll('.trip-action-btn[data-action]').forEach(function(el) {
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var action = this.getAttribute('data-action');
+      var tripId = this.getAttribute('data-trip-id');
+      if (!tripId || !action) return;
+
+      if (action === 'switch') {
+        D.switchTrip(tripId);
+        // Re-render the entire settings page to reflect the new current trip
+        location.reload();
+      } else if (action === 'archive') {
+        D.archiveTrip(tripId);
+        location.reload();
+      } else if (action === 'unarchive') {
+        D.unarchiveTrip(tripId);
+        location.reload();
+      } else if (action === 'delete') {
+        D.deleteTrip(tripId);
+        location.reload();
+      }
+    });
+  });
+
+  // Create trip trigger
+  var createTrigger = document.getElementById('createTripTrigger');
+  if (createTrigger) {
+    createTrigger.addEventListener('click', function () {
+      var panel = document.getElementById('panel-createTrip');
+      if (panel) {
+        panel.classList.add('open');
+        var nameInput = document.getElementById('newTripName');
+        if (nameInput) nameInput.focus();
+      }
+    });
+  }
+
+  // Create trip button
+  var createBtn = document.getElementById('createTripBtn');
+  if (createBtn) {
+    createBtn.addEventListener('click', function () {
+      var name = document.getElementById('newTripName').value.trim();
+      var startDate = document.getElementById('newTripStart').value;
+      var endDate = document.getElementById('newTripEnd').value;
+      var budget = parseInt(document.getElementById('newTripBudget').value) || 0;
+
+      if (!name) {
+        document.getElementById('newTripName').style.borderColor = 'var(--danger)';
+        return;
+      }
+      if (!startDate || !endDate) {
+        if (!startDate) document.getElementById('newTripStart').style.borderColor = 'var(--danger)';
+        if (!endDate) document.getElementById('newTripEnd').style.borderColor = 'var(--danger)';
+        return;
+      }
+
+      D.createTrip({
+        name: name,
+        startDate: startDate,
+        endDate: endDate,
+        budget: budget
+      });
+
+      // Navigate to home page with the new trip
+      location.href = '01-home.html';
+    });
+  }
+
+  // Clear validation styling on input focus
+  ['newTripName', 'newTripStart', 'newTripEnd'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('focus', function() {
+        this.style.borderColor = 'var(--primary)';
+      });
+      el.addEventListener('blur', function() {
+        this.style.borderColor = '';
+      });
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>

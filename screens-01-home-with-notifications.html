@@ -1,0 +1,510 @@
+
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=393,initial-scale=1">
+<title>旅途账本 · 首页</title>
+<style>
+:root {
+  --primary: #2D8B7A;
+  --primary-light: #E8F5F0;
+  --price: #E05A38;
+  --bg: #F2F2F5;
+  --surface: #FFFFFF;
+  --fg: #1A1D26;
+  --fg-secondary: #5A6072;
+  --muted: #8B92A5;
+  --border: #E5E8EF;
+  --border-light: #F0F1F5;
+  --shadow-sm: 0 1px 2px rgba(26,29,38,0.04);
+  --shadow-md: 0 2px 12px rgba(26,29,38,0.06);
+  --shadow-lg: 0 8px 32px rgba(26,29,38,0.12);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --font: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-number: 'SF Pro Display', 'SF Mono', -apple-system, monospace;
+  --nav-height: 72px;
+  --status-height: 54px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  width: 393px;
+  margin: 0 auto;
+  min-height: 852px;
+  -webkit-font-smoothing: antialiased;
+  color: var(--fg);
+  padding-top: var(--status-height);
+  padding-bottom: var(--nav-height);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Status Bar */
+.status-bar {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  width: 393px; height: var(--status-height);
+  background: var(--surface);
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 28px 8px;
+  z-index: 100;
+}
+.status-bar .time { font-size: 15px; font-weight: 600; }
+.status-bar .icons { display: flex; align-items: center; gap: 6px; }
+.status-bar .icons svg { width: 16px; height: 16px; }
+
+/* Header */
+.header {
+  position: sticky; top: var(--status-height); left: 50%; transform: translateX(-50%);
+  width: 393px; padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg); z-index: 50;
+}
+.header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.header-actions { display: flex; gap: 8px; }
+.header-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; transition: all 0.15s;
+}
+.header-btn:active { transform: scale(0.94); background: var(--border-light); }
+.header-btn svg { width: 18px; height: 18px; stroke: var(--fg-secondary); }
+.badge {
+  position: absolute; top: -3px; right: -3px;
+  min-width: 18px; height: 18px; border-radius: 9px;
+  background: #E05A38; color: #fff; font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 5px; box-shadow: 0 1px 3px rgba(224,90,56,0.3);
+}
+
+/* ===== NOTIFICATION PANEL ===== */
+.notif-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.25); z-index: 200;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  display: flex; justify-content: flex-end;
+}
+.notif-overlay.open { opacity: 1; pointer-events: auto; }
+.notif-panel {
+  width: 340px; height: 100vh; background: var(--surface);
+  box-shadow: -8px 0 32px rgba(26,29,38,0.15);
+  transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+  display: flex; flex-direction: column;
+}
+.notif-overlay.open .notif-panel { transform: translateX(0); }
+.notif-panel-header {
+  padding: 20px 20px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0;
+}
+.notif-panel-header h3 { font-size: 17px; font-weight: 700; }
+.notif-mark-all {
+  font-size: 13px; color: var(--primary); font-weight: 500;
+  background: none; border: none; cursor: pointer; padding: 4px 8px;
+  border-radius: 6px; transition: background 0.15s;
+}
+.notif-mark-all:active { background: var(--primary-light); }
+.notif-list {
+  flex: 1; overflow-y: auto; padding: 8px 0;
+}
+.notif-item {
+  padding: 14px 20px;
+  display: flex; gap: 12px;
+  border-bottom: 0.5px solid var(--border-light);
+  cursor: pointer; transition: background 0.15s;
+  position: relative;
+}
+.notif-item:active { background: #F8F9FC; }
+.notif-item.unread { background: #F8FDFB; }
+.notif-dot {
+  position: absolute; left: 8px; top: 20px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--primary);
+  opacity: 0;
+}
+.notif-item.unread .notif-dot { opacity: 1; }
+.notif-icon-wrap {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 16px;
+}
+.notif-icon-wrap.type-budget { background: #FFF0EC; }
+.notif-icon-wrap.type-daily { background: #EDF5FF; }
+.notif-icon-wrap.type-anomaly { background: #FFF8E1; }
+.notif-icon-wrap.type-trip { background: #E8F5F0; }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.notif-text { font-size: 12px; color: var(--fg-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.notif-empty {
+  padding: 60px 20px; text-align: center;
+  font-size: 14px; color: var(--muted);
+}
+.notif-empty svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.3; }
+
+/* ===== MAIN CONTENT ===== */
+.content { padding: 0 16px; }
+
+/* Trip Card */
+.trip-card {
+  background: linear-gradient(135deg, #1B5E4A 0%, #257A63 50%, #2D8B7A 100%);
+  border-radius: var(--radius-lg); padding: 20px;
+  color: #fff; margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(45,139,122,0.25);
+  position: relative; overflow: hidden;
+}
+.trip-card::before {
+  content: ''; position: absolute; top: -30px; right: -20px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+.trip-card-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; position: relative; z-index: 1; }
+.trip-card-meta { font-size: 12px; opacity: 0.8; margin-bottom: 14px; position: relative; z-index: 1; }
+.trip-progress-row {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 10px; position: relative; z-index: 1;
+}
+.trip-progress-label { font-size: 12px; opacity: 0.75; }
+.trip-progress-val { font-size: 24px; font-weight: 700; font-family: var(--font-number); letter-spacing: -0.02em; }
+.trip-progress-val small { font-size: 14px; font-weight: 500; opacity: 0.8; }
+.trip-bar-bg {
+  height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;
+  overflow: hidden; position: relative; z-index: 1;
+}
+.trip-bar-fill { height: 100%; background: rgba(255,255,255,0.85); border-radius: 3px; transition: width 0.3s; }
+
+/* Quick Stats */
+.quick-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  padding: 14px; box-shadow: var(--shadow-sm); border: 0.5px solid var(--border);
+}
+.stat-card-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.stat-card-val { font-size: 22px; font-weight: 700; font-family: var(--font-number); letter-spacing: -0.02em; color: var(--fg); }
+.stat-card-val.price { color: var(--price); font-size: 20px; }
+.stat-card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Report Card */
+.report-card {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, #E8F5F0 0%, #D4EBE3 100%);
+  border-radius: var(--radius-md); padding: 16px;
+  margin-bottom: 16px; cursor: pointer;
+  border: 0.5px solid rgba(45,139,122,0.15);
+  transition: transform 0.15s;
+}
+.report-card:active { transform: scale(0.98); }
+.report-card-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--primary); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.report-card-icon svg { width: 22px; height: 22px; stroke: #fff; }
+.report-card-title { font-size: 15px; font-weight: 600; color: var(--fg); }
+.report-card-desc { font-size: 12px; color: var(--fg-secondary); margin-top: 2px; }
+.report-card-arrow { margin-left: auto; color: var(--primary); font-size: 18px; font-weight: 700; }
+
+/* Timeline Header */
+.timeline-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding: 0 2px;
+}
+.timeline-header h3 { font-size: 15px; font-weight: 700; }
+.timeline-header .today-label { font-size: 12px; color: var(--primary); font-weight: 500; }
+
+/* Timeline */
+.timeline { display: flex; flex-direction: column; }
+.timeline-item {
+  display: flex; gap: 12px; padding: 12px 0;
+  border-bottom: 0.5px solid var(--border-light);
+}
+.timeline-item:last-child { border-bottom: none; }
+.tl-time { font-size: 12px; color: var(--muted); width: 38px; flex-shrink: 0; font-family: var(--font-number); padding-top: 2px; }
+.tl-dot-col { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.tl-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  background: var(--surface); border: 2px solid var(--primary);
+}
+.tl-line { width: 1.5px; flex: 1; background: var(--border); min-height: 20px; }
+.tl-card {
+  flex: 1; background: var(--surface); border-radius: var(--radius-sm);
+  padding: 12px 14px; box-shadow: var(--shadow-sm); border: 0.5px solid var(--border);
+}
+.tl-card-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.tl-cat { font-size: 13px; font-weight: 600; }
+.tl-amount { font-size: 16px; font-weight: 700; font-family: var(--font-number); color: var(--price); letter-spacing: -0.02em; }
+.tl-card-row2 { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.tl-pp { font-size: 11px; color: var(--muted); }
+
+/* FAB */
+.fab {
+  position: fixed; bottom: calc(var(--nav-height) + 16px); right: 16px;
+  width: 52px; height: 52px; border-radius: 50%; background: var(--primary);
+  box-shadow: 0 4px 16px rgba(45,139,122,0.35);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 40; transition: transform 0.15s;
+}
+.fab:active { transform: scale(0.92); }
+.fab svg { width: 26px; height: 26px; stroke: #fff; }
+
+/* Tab Bar */
+.tab-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 393px; height: var(--nav-height); background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 16px 12px; z-index: 100;
+}
+.tab-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; border: none; background: none; padding: 6px 14px;
+  color: var(--muted); transition: color 0.15s; position: relative;
+}
+.tab-btn.active { color: var(--primary); }
+.tab-btn svg { width: 22px; height: 22px; }
+.tab-btn span { font-size: 10px; font-weight: 500; }
+.tab-indicator {
+  position: absolute; top: -2px; width: 20px; height: 3px;
+  background: var(--primary); border-radius: 2px;
+  opacity: 0; transition: opacity 0.15s;
+}
+.tab-btn.active .tab-indicator { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Status Bar -->
+<div class="status-bar">
+  <span class="time">9:41</span>
+  <span class="icons">
+    <svg viewBox="0 0 20 16"><rect x="1" y="7" width="3" height="8" rx="0.5" fill="#1A1D26"/><rect x="6" y="4" width="3" height="11" rx="0.5" fill="#1A1D26"/><rect x="11" y="1" width="3" height="14" rx="0.5" fill="#1A1D26"/><rect x="16" y="0" width="3" height="15" rx="0.5" fill="#1A1D26"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#1A1D26" stroke-width="1.5"><path d="M17.5 18.5H6.5A4 4 0 012.8 14L1.2 3.8C1.1 3.2 1.5 2.5 2.2 2.5h19.6c.7 0 1.1.7.9 1.3L21.2 14a4 4 0 01-3.7 4.5z"/><circle cx="12" cy="21" r="1.5"/></svg>
+    <svg viewBox="0 0 32 16"><rect x="1" y="2" width="24" height="11" rx="2.5" stroke="#1A1D26" stroke-width="1.5" fill="none"/><rect x="3" y="4" width="20" height="7" rx="1" fill="#1A1D26"/><rect x="27" y="5" width="3" height="6" rx="1" fill="rgba(26,29,38,0.4)"/></svg>
+  </span>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-title" id="headerTitle">旅途账本</div>
+  <div class="header-actions">
+    <button class="header-btn" id="notifBtn" onclick="openNotifications()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 17a2 2 0 01-3.4 0"/></svg>
+      <span class="badge" id="notifBadge">0</span>
+    </button>
+    <button class="header-btn" onclick="location.href='05-settings.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.7l.1.1a1.9 1.9 0 01-2.7 2.7l-.1-.1a1.6 1.6 0 00-1.7-.3 1.6 1.6 0 00-1 1.5V21a1.9 1.9 0 01-3.8 0v-.3a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.7.3l-.1.1a1.9 1.9 0 01-2.7-2.7l.1-.1a1.6 1.6 0 00.3-1.7 1.6 1.6 0 00-1.5-1H3a1.9 1.9 0 010-3.8h.3a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.7l-.1-.1a1.9 1.9 0 012.7-2.7l.1.1a1.6 1.6 0 001.7.3A1.6 1.6 0 0010 4.7V4.5a1.9 1.9 0 013.8 0v.3a1.6 1.6 0 001 1.5 1.6 1.6 0 001.7-.3l.1-.1a1.9 1.9 0 012.7 2.7l-.1.1a1.6 1.6 0 00-.3 1.7 1.6 1.6 0 001.5 1h.3a1.9 1.9 0 010 3.8h-.3a1.6 1.6 0 00-1.5 1z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===== NOTIFICATION OVERLAY ===== -->
+<div class="notif-overlay" id="notifOverlay" onclick="closeNotifications(event)">
+  <div class="notif-panel" onclick="event.stopPropagation()">
+    <div class="notif-panel-header">
+      <h3>通知</h3>
+      <button class="notif-mark-all" onclick="markAllRead()">全部已读</button>
+    </div>
+    <div class="notif-list" id="notifList"></div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="mainContent"></div>
+
+<!-- FAB -->
+<div class="fab" onclick="location.href='02-add-expense.html'">
+  <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19" stroke-width="2.5" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke-width="2.5" stroke-linecap="round"/></svg>
+</div>
+
+<!-- Tab Bar -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="location.href='01-home.html'">
+    <span class="tab-indicator"></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>首页</span>
+  </button>
+  <button class="tab-btn" onclick="location.href='03-statistics.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="9" width="7" height="12" rx="1"/></svg>
+    <span>统计</span>
+  </button>
+  <button class="tab-btn" onclick="location.href='05-settings.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M3 12h2m14 0h2m-9-9v2m0 14v2"/><circle cx="5" cy="5" r="1.5"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="19" cy="19" r="1.5"/></svg>
+    <span>我的</span>
+  </button>
+</div>
+
+<script src="../js/trip-data.js"></script>
+<script>
+var D = TripData;
+
+// ===== NOTIFICATIONS =====
+var notifOverlay = document.getElementById('notifOverlay');
+
+function getIconForType(type) {
+  switch(type) {
+    case 'budget': return '💸';
+    case 'daily': return '📊';
+    case 'anomaly': return '⚠️';
+    case 'trip': return '📍';
+    default: return '🔔';
+  }
+}
+
+function renderNotifications() {
+  var list = D.getNotifications();
+  var container = document.getElementById('notifList');
+  var badge = document.getElementById('notifBadge');
+  var unread = 0;
+  var html = '';
+
+  if (list.length === 0) {
+    html = '<div class="notif-empty"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg><div>暂无通知</div></div>';
+  } else {
+    for (var i = 0; i < list.length; i++) {
+      var n = list[i];
+      if (n.unread) unread++;
+      html += '<div class="notif-item' + (n.unread ? ' unread' : '') + '" onclick="readNotif(\'' + n.id + '\')">' +
+        '<span class="notif-dot"></span>' +
+        '<div class="notif-icon-wrap type-' + n.type + '">' + getIconForType(n.type) + '</div>' +
+        '<div class="notif-body"><div class="notif-title">' + n.title + '</div>' +
+        '<div class="notif-text">' + n.body + '</div>' +
+        '<div class="notif-time">' + n.time + '</div></div></div>';
+    }
+  }
+  container.innerHTML = html;
+
+  if (unread > 0) {
+    badge.textContent = unread > 99 ? '99+' : unread;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function openNotifications() {
+  renderNotifications();
+  notifOverlay.classList.add('open');
+}
+
+function closeNotifications(e) {
+  if (e && e.target !== notifOverlay) return;
+  notifOverlay.classList.remove('open');
+  renderNotifications();
+}
+
+function readNotif(id) {
+  D.markNotificationRead(id);
+  renderNotifications();
+}
+
+function markAllRead() {
+  D.markAllNotificationsRead();
+  renderNotifications();
+}
+
+// Close with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') notifOverlay.classList.remove('open');
+});
+
+// ===== MAIN CONTENT RENDER =====
+function render() {
+  var trip = D.trip;
+  var expenses = D.expenses;
+  var todayDay = trip.todayDay;
+  var tc = document.getElementById('mainContent');
+
+  document.getElementById('headerTitle').textContent = trip.name + ' · Day ' + trip.currentDay;
+
+  var dashboardCards = D.dashboardMetrics;
+  var cardData = {
+    totalSpent: { label: '总消费', val: '¥' + trip.totalSpent.toLocaleString(), sub: trip.expenseCount + '笔记录' },
+    todaySpent: { label: '今日消费', val: '¥' + trip.todaySpent.toLocaleString(), sub: todayDay + '/' + trip.totalDays + '天' },
+    perPerson: { label: '人均消费', val: '¥' + trip.perPersonSpent.toLocaleString(), sub: D.members.length + '人同行' },
+    budgetRemaining: { label: '剩余预算', val: '¥' + Math.max(0, trip.budgetRemaining).toLocaleString(), sub: '预算' + (trip.budgetUsed || 0).toLocaleString() },
+    budgetRate: { label: '预算执行', val: trip.budgetRate + '%', sub: trip.budgetRate >= 100 ? '已超预算' : (trip.budgetRate >= 80 ? '接近上限' : '健康') },
+    expenseCount: { label: '消费次数', val: trip.expenseCount + '次', sub: '今日' + countToday(expenses, todayDay) + '笔' }
+  };
+
+  var statCardsHtml = '';
+  for (var i = 0; i < dashboardCards.length; i++) {
+    var cid = dashboardCards[i];
+    var cd = cardData[cid];
+    if (cd) statCardsHtml += '<div class="stat-card"><div class="stat-card-label">' + cd.label + '</div><div class="stat-card-val price">' + cd.val + '</div><div class="stat-card-sub">' + cd.sub + '</div></div>';
+  }
+
+  // Daily breakdown
+  var daily = D.getDailyBreakdown();
+  var todayExpenses = [];
+  for (var j = 0; j < expenses.length; j++) {
+    if (expenses[j].day === todayDay) todayExpenses.push(expenses[j]);
+  }
+  todayExpenses.sort(function(a,b){ return b.time > a.time ? -1 : 1; });
+
+  var timelineHtml = '';
+  for (var k = 0; k < todayExpenses.length; k++) {
+    var ex = todayExpenses[k];
+    var cat = findCategory(ex.categoryId);
+    var pids = ex.participantIds || [];
+    var pp = pids.length ? Math.round(ex.amount / pids.length) : ex.amount;
+    timelineHtml +=
+      '<div class="timeline-item">' +
+      '<div class="tl-time">' + ex.time + '</div>' +
+      '<div class="tl-dot-col"><div class="tl-dot"></div>' + (k < todayExpenses.length - 1 ? '<div class="tl-line"></div>' : '') + '</div>' +
+      '<div class="tl-card"><div class="tl-card-row1"><span class="tl-cat">' + (cat ? cat.icon + ' ' + cat.name : '其他') + '</span><span class="tl-amount">¥' + ex.amount + '</span></div>' +
+      '<div class="tl-card-row2"><span>' + ex.location + '</span><span>·</span><span class="tl-pp">人均 ¥' + pp + '</span></div></div></div>';
+  }
+
+  if (timelineHtml === '') {
+    timelineHtml = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">今日暂无消费记录</div>';
+  }
+
+  var todayLabel = todayDay <= trip.totalDays
+    ? 'Day ' + todayDay + ' · ' + D.dayNumToName(todayDay)
+    : '旅行已结束';
+
+  tc.innerHTML =
+    '<div class="trip-card">' +
+    '<div class="trip-card-name">' + trip.name + '</div>' +
+    '<div class="trip-card-meta">' + trip.startDate + ' → ' + trip.endDate + ' · ' + D.members.length + '人同行</div>' +
+    '<div class="trip-progress-row"><span class="trip-progress-label">Day ' + trip.currentDay + '/' + trip.totalDays + '</span><span class="trip-progress-val">¥' + trip.totalSpent.toLocaleString() + '<small> / ¥' + (trip.budgetUsed || 0).toLocaleString() + '</small></span></div>' +
+    '<div class="trip-bar-bg"><div class="trip-bar-fill" style="width:' + Math.min(trip.budgetRate, 100) + '%"></div></div>' +
+    '</div>' +
+
+    '<div class="quick-stats">' + statCardsHtml + '</div>' +
+
+    '<a href="04-summary.html" style="text-decoration:none;">' +
+    '<div class="report-card">' +
+    '<div class="report-card-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
+    '<div><div class="report-card-title">查看旅行报告</div><div class="report-card-desc">消费总结 · 人均分析 · 导出分享</div></div>' +
+    '<div class="report-card-arrow">›</div>' +
+    '</div></a>' +
+
+    '<div class="timeline-header"><h3>今日消费</h3><span class="today-label">' + todayLabel + '</span></div>' +
+    '<div class="timeline">' + timelineHtml + '</div>';
+
+  renderNotifications();
+}
+
+function countToday(expenses, todayDay) {
+  var c = 0;
+  for (var i = 0; i < expenses.length; i++) { if (expenses[i].day === todayDay) c++; }
+  return c;
+}
+
+function findCategory(cid) {
+  var cats = D.categories;
+  for (var i = 0; i < cats.length; i++) { if (cats[i].id === cid) return cats[i]; }
+  return null;
+}
+
+render();
+</script>
+</body>
+</html>

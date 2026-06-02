@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>旅途账本 — 旅行费用记录 APP</title>
+<style>
+:root {
+  --bg: #F5F5F7;
+  --surface: #FFFFFF;
+  --fg: #1D1D1F;
+  --fg-2: #6E7179;
+  --muted: #A0A4AE;
+  --border: #E5E5EA;
+  --primary: #2D8B7A;
+  --primary-light: #E6F3F0;
+  --price: #E05A38;
+  --price-light: #FDF0EC;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', system-ui, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  color: var(--fg);
+}
+
+.hero {
+  background: linear-gradient(145deg, #1F6B5D 0%, #2D8B7A 40%, #3DA392 100%);
+  padding: 56px 40px 44px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.hero-badge svg { width: 13px; height: 13px; }
+
+.hero h1 {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero p {
+  font-size: 16px;
+  opacity: 0.85;
+  line-height: 1.5;
+  max-width: 460px;
+  position: relative;
+  z-index: 1;
+}
+
+.features {
+  display: flex;
+  gap: 20px;
+  padding: 28px 40px 0;
+  flex-wrap: wrap;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feature-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feature-icon svg { width: 18px; height: 18px; }
+
+.feature-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-2);
+}
+
+.gallery {
+  padding: 36px 40px;
+}
+
+.gallery-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 6px;
+}
+
+.gallery-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.screens {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  padding-bottom: 24px;
+  scroll-snap-type: x mandatory;
+}
+
+.screens::-webkit-scrollbar { height: 5px; }
+.screens::-webkit-scrollbar-track { background: transparent; }
+.screens::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.screen-card {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.screen-card a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s;
+}
+
+.screen-card a:hover {
+  transform: translateY(-4px);
+}
+
+.screen-frame {
+  width: 280px;
+  height: 606px;
+  border-radius: 40px;
+  overflow: hidden;
+  border: 8px solid #1D1D1F;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05);
+  position: relative;
+  background: #000;
+}
+
+.screen-frame iframe {
+  width: 393px;
+  height: 852px;
+  border: none;
+  transform-origin: top left;
+  transform: scale(0.666);
+  pointer-events: none;
+}
+
+.screen-label {
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.screen-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.footer {
+  padding: 18px 40px 36px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 0.5px solid var(--border);
+}
+
+.footer span {
+  color: var(--primary);
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+    移动端 APP 原型
+  </div>
+  <h1>旅途账本</h1>
+  <p>多人旅行费用记录与分摊 APP — 快速记账、智能分摊、旅行总结，让每一段旅程的账目清清楚楚。</p>
+</div>
+
+<div class="features">
+  <div class="feature">
+    <div class="feature-icon" style="background:var(--primary-light); color:var(--primary)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="feature-text">一键记账</div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon" style="background:var(--price-light); color:var(--price)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    </div>
+    <div class="feature-text">多人分摊</div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon" style="background:#FFF3E0; color:#E65100">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </div>
+    <div class="feature-text">智能统计</div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon" style="background:#E3F2FD; color:#1565C0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div class="feature-text">旅行总结</div>
+  </div>
+</div>
+
+<div class="gallery">
+  <div class="gallery-title">界面总览</div>
+  <div class="gallery-subtitle">点击任意屏幕查看完整尺寸</div>
+
+  <div class="screens">
+    <div class="screen-card">
+      <a href="screens/01-home.html">
+        <div class="screen-frame">
+          <iframe src="screens/01-home.html" loading="lazy"></iframe>
+        </div>
+        <div class="screen-label">首页 · 旅程概况</div>
+        <div class="screen-desc">预算进度、今日消费、通知提醒</div>
+      </a>
+    </div>
+
+    <div class="screen-card">
+      <a href="screens/02-add-expense.html">
+        <div class="screen-frame">
+          <iframe src="screens/02-add-expense.html" loading="lazy"></iframe>
+        </div>
+        <div class="screen-label">记一笔 · 快速录入</div>
+        <div class="screen-desc">分类选择、参与成员、小票上传</div>
+      </a>
+    </div>
+
+    <div class="screen-card">
+      <a href="screens/03-statistics.html">
+        <div class="screen-frame">
+          <iframe src="screens/03-statistics.html" loading="lazy"></iframe>
+        </div>
+        <div class="screen-label">统计 · 消费分析</div>
+        <div class="screen-desc">消费结构、每日趋势、人均排行</div>
+      </a>
+    </div>
+
+    <div class="screen-card">
+      <a href="screens/04-summary.html">
+        <div class="screen-frame">
+          <iframe src="screens/04-summary.html" loading="lazy"></iframe>
+        </div>
+        <div class="screen-label">总结 · 旅行报告</div>
+        <div class="screen-desc">消费总结、亮点分析、导出分享</div>
+      </a>
+    </div>
+
+    <div class="screen-card">
+      <a href="screens/05-settings.html">
+        <div class="screen-frame">
+          <iframe src="screens/05-settings.html" loading="lazy"></iframe>
+        </div>
+        <div class="screen-label">设置 · 配置中心</div>
+        <div class="screen-desc">旅程默认、成员分摊、个性化配置</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  旅途账本 · <span>Open Design</span> 原型
+</div>
+
+</body>
+</html>

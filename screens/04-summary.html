@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>旅途账本 — 旅行总结</title>
+<style>
+:root {
+  --bg: #F2F2F5;
+  --surface: #FFFFFF;
+  --fg: #1D1D1F;
+  --fg-2: #6E7179;
+  --muted: #A0A4AE;
+  --border: #E5E5EA;
+  --primary: #2D8B7A;
+  --primary-light: #E6F3F0;
+  --primary-dark: #1F6B5D;
+  --price: #E05A38;
+  --price-light: #FDF0EC;
+  --success: #34A853;
+  --success-bg: #E6F4EA;
+  --warning: #E8A020;
+  --danger: #D93025;
+  --shadow-s: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-m: 0 2px 8px rgba(0,0,0,0.07);
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 16px;
+  --r-xl: 20px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 393px;
+  height: 852px;
+  background: #000;
+  border-radius: 50px;
+  padding: 12px;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic-island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 126px;
+  height: 36px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+.status-bar {
+  height: 54px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.status-bar .time { letter-spacing: 0.02em; font-size: 16px; }
+.status-bar .right { display: flex; align-items: center; gap: 5px; }
+
+.hero-header {
+  background: linear-gradient(145deg, #1F6B5D 0%, #2D8B7A 40%, #3DA392 100%);
+  padding: 6px 20px 28px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #fff;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.hero-badge svg { width: 12px; height: 12px; }
+
+.hero-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-date {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-stat {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--r-m);
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.hero-stat-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 4px;
+}
+
+.hero-stat-value {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-stat-value.sm { font-size: 16px; }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 40px;
+  margin-top: -8px;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  background: var(--bg);
+  position: relative;
+}
+.content::-webkit-scrollbar { display: none; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.summary-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 16px;
+  box-shadow: var(--shadow-s);
+}
+
+.summary-card.full { grid-column: 1 / -1; }
+.summary-card-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+
+.summary-card-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.summary-card-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.budget-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.budget-indicator svg { width: 12px; height: 12px; }
+.budget-indicator.under { background: #E6F4EA; color: var(--success); }
+.budget-indicator.over { background: #FCE8E6; color: var(--danger); }
+
+.breakdown-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-s);
+}
+
+.breakdown-title { font-size: 15px; font-weight: 600; color: var(--fg); margin-bottom: 14px; }
+
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.breakdown-item:last-child { margin-bottom: 0; }
+
+.breakdown-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.breakdown-icon svg { width: 15px; height: 15px; }
+.breakdown-info { flex: 1; }
+.breakdown-name { font-size: 13px; font-weight: 500; color: var(--fg); margin-bottom: 4px; }
+
+.breakdown-bar-track {
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.breakdown-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.breakdown-right { text-align: right; flex-shrink: 0; }
+
+.breakdown-amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown-pct { font-size: 11px; color: var(--muted); }
+
+.highlight-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-s);
+}
+
+.highlight-title { font-size: 15px; font-weight: 600; color: var(--fg); margin-bottom: 12px; }
+
+.highlight-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.highlight-item:last-child { border-bottom: none; }
+
+.highlight-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-m);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.highlight-icon svg { width: 18px; height: 18px; }
+.highlight-info { flex: 1; }
+.highlight-label { font-size: 12px; color: var(--muted); }
+.highlight-desc { font-size: 14px; font-weight: 500; color: var(--fg); }
+
+.highlight-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--price);
+  font-variant-numeric: tabular-nums;
+}
+
+.export-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-s);
+}
+
+.export-title { font-size: 15px; font-weight: 600; color: var(--fg); margin-bottom: 14px; }
+
+.export-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.export-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 12px;
+  border-radius: var(--r-m);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+
+.export-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.export-btn svg { width: 22px; height: 22px; color: var(--fg-2); }
+.export-btn:hover svg { color: var(--primary); }
+.export-label { font-size: 13px; font-weight: 500; color: var(--fg-2); }
+
+.home-indicator {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  opacity: 0.2;
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar" style="color:#fff">
+      <span class="time">9:41</span>
+      <span class="right">
+        <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#fff"/><rect x="4.5" y="5" width="3" height="7" rx="0.5" fill="#fff"/><rect x="9" y="2" width="3" height="10" rx="0.5" fill="#fff"/><rect x="13.5" y="0" width="2.5" height="12" rx="0.5" fill="#fff" opacity="0.3"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 3.6C9.8 3.6 11.4 4.3 12.6 5.5" stroke="#fff" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M8 6.4C9 6.4 9.9 6.8 10.5 7.5" stroke="#fff" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="8" cy="10" r="1.2" fill="#fff"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12"><rect x="0.5" y="1" width="21" height="10" rx="2.5" stroke="#fff" stroke-width="0.8" fill="none"/><rect x="2" y="2.5" width="14" height="7" rx="1.2" fill="#fff"/><rect x="22.5" y="4" width="2.5" height="4" rx="1" fill="#fff" opacity="0.4"/></svg>
+      </span>
+    </div>
+
+    <!-- Hero (dynamic) -->
+    <div class="hero-header" id="heroSection"></div>
+
+    <div class="content" id="mainContent"></div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+<script src="../js/trip-data.js"></script>
+<script>
+(function () {
+  var D = TripData;
+  var totalSpent = D.getTotalSpent();
+  var perPerson = D.getPerPersonAvg();
+  var totalExpenses = D.expenses.length;
+  var memberCount = D.members.length;
+  var budget = D.trip.budget;
+  var remain = budget - totalSpent;
+  var budgetRate = budget > 0 ? (totalSpent / budget * 100).toFixed(1) : 0;
+  var isUnderBudget = totalSpent <= budget;
+
+  // ── Hero ──
+  var heroHtml = '<div class="hero-badge">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+    '旅程已结束</div>' +
+    '<div class="hero-title">' + D.trip.name + '</div>' +
+    '<div class="hero-date">' + D.formatDateRange() + ' · ' + memberCount + '人同行</div>' +
+    '<div class="hero-stats">' +
+      '<div class="hero-stat"><div class="hero-stat-label">总消费</div><div class="hero-stat-value">' + D.formatMoney(totalSpent) + '</div></div>' +
+      '<div class="hero-stat"><div class="hero-stat-label">人均</div><div class="hero-stat-value sm">' + D.formatMoney(perPerson) + '</div></div>' +
+      '<div class="hero-stat"><div class="hero-stat-label">总笔数</div><div class="hero-stat-value sm">' + totalExpenses + '笔</div></div>' +
+    '</div>';
+  document.getElementById('heroSection').innerHTML = heroHtml;
+
+  // ── Content ──
+  var html = '';
+
+  // Key Metrics
+  html += '<div class="summary-grid">' +
+    '<div class="summary-card"><div class="summary-card-label">预算执行</div>' +
+      '<div class="summary-card-value">' + budgetRate + '%</div>' +
+      '<div class="summary-card-sub"><span class="budget-indicator ' + (isUnderBudget ? 'under' : 'over') + '">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+        (isUnderBudget ? '预算内' : '已超支') + '</span></div></div>' +
+    '<div class="summary-card"><div class="summary-card-label">剩余预算</div>' +
+      '<div class="summary-card-value">' + D.formatMoney(Math.max(0, remain)) + '</div>' +
+      '<div class="summary-card-sub">预算 ' + D.formatMoney(budget) + '</div></div></div>';
+
+  // Category Breakdown
+  var breakdown = D.getCategoryBreakdown();
+  html += '<div class="breakdown-card"><div class="breakdown-title">消费类别占比</div>';
+
+  breakdown.forEach(function (item) {
+    var cat = D.getCategoryById(item.catId);
+    var color = cat ? cat.color : '#6E7179';
+    var bgColor = cat ? cat.bgColor : '#F5F5F5';
+
+    html += '<div class="breakdown-item">' +
+      '<div class="breakdown-icon" style="background:' + bgColor + ';color:' + color + '">' + D.getIcon(item.catId) + '</div>' +
+      '<div class="breakdown-info"><div class="breakdown-name">' + (cat ? cat.name : item.catId) + '</div>' +
+        '<div class="breakdown-bar-track"><div class="breakdown-bar-fill" style="width:' + item.pct + '%;background:' + color + '"></div></div></div>' +
+      '<div class="breakdown-right"><div class="breakdown-amount">' + D.formatMoney(item.total) + '</div>' +
+        '<div class="breakdown-pct">' + item.pct + '%</div></div></div>';
+  });
+
+  html += '</div>';
+
+  // Highlights (computed from data)
+  var highlights = D.getHighlights();
+  html += '<div class="highlight-card"><div class="highlight-title">旅行亮点</div>';
+
+  // Highest day
+  if (highlights.highestDay) {
+    var hd = highlights.highestDay;
+    html += '<div class="highlight-item">' +
+      '<div class="highlight-icon" style="background:var(--price-light)">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="var(--price)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>' +
+      '<div class="highlight-info"><div class="highlight-label">消费最高的一天</div>' +
+        '<div class="highlight-desc">Day ' + hd.day + '</div></div>' +
+      '<div class="highlight-value">' + D.formatMoney(hd.total) + '</div></div>';
+  }
+
+  // Biggest expense
+  if (highlights.biggestExpense) {
+    var be = highlights.biggestExpense;
+    var beCat = D.getCategoryById(be.cat);
+    html += '<div class="highlight-item">' +
+      '<div class="highlight-icon" style="background:var(--primary-light)">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>' +
+      '<div class="highlight-info"><div class="highlight-label">最大单笔消费</div>' +
+        '<div class="highlight-desc">' + (beCat ? beCat.name : '') + ' · ' + be.desc + '</div></div>' +
+      '<div class="highlight-value">' + D.formatMoney(be.amount) + '</div></div>';
+  }
+
+  // Top category
+  if (highlights.topCategory) {
+    var tc = highlights.topCategory;
+    var tcCat = D.getCategoryById(tc.catId);
+    html += '<div class="highlight-item">' +
+      '<div class="highlight-icon" style="background:' + (tcCat ? tcCat.bgColor : '#FFF3E0') + '">' +
+        D.getIcon(tc.catId) + '</div>' +
+      '<div class="highlight-info"><div class="highlight-label">消费最多的类别</div>' +
+        '<div class="highlight-desc">' + (tcCat ? tcCat.name : tc.catId) + ' · ' + tc.count + '笔</div></div>' +
+      '<div class="highlight-value">' + D.formatMoney(tc.total) + '</div></div>';
+  }
+
+  html += '</div>';
+
+  // Export
+  html += '<div class="export-card"><div class="export-title">导出与分享</div>' +
+    '<div class="export-grid">' +
+      '<button class="export-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span class="export-label">导出 PDF</span></button>' +
+      '<button class="export-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><span class="export-label">导出 Excel</span></button>' +
+      '<button class="export-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span class="export-label">生成长图</span></button>' +
+      '<button class="export-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="export-label">分享账单</span></button>' +
+    '</div></div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+})();
+</script>
+
+</body>
+</html>

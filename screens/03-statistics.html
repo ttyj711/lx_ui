@@ -1,0 +1,1225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>旅途账本 — 统计</title>
+<style>
+:root {
+  --bg: #F2F2F5;
+  --surface: #FFFFFF;
+  --fg: #1D1D1F;
+  --fg-2: #6E7179;
+  --muted: #A0A4AE;
+  --border: #E5E5EA;
+  --primary: #2D8B7A;
+  --primary-light: #E6F3F0;
+  --primary-dark: #1F6B5D;
+  --price: #E05A38;
+  --price-light: #FDF0EC;
+  --success: #34A853;
+  --warning: #E8A020;
+  --danger: #D93025;
+  --shadow-s: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-m: 0 2px 8px rgba(0,0,0,0.07);
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 16px;
+  --r-xl: 20px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 393px;
+  height: 852px;
+  background: #000;
+  border-radius: 50px;
+  padding: 12px;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic-island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 126px;
+  height: 36px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+.status-bar {
+  height: 54px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+  flex-shrink: 0;
+}
+
+.status-bar .time { letter-spacing: 0.02em; font-size: 16px; }
+.status-bar .right { display: flex; align-items: center; gap: 5px; }
+
+.page-header {
+  padding: 4px 16px 12px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.page-header-content { flex: 1; }
+.page-header h1 { font-size: 28px; font-weight: 700; color: var(--fg); letter-spacing: -0.03em; }
+.page-header p { font-size: 13px; color: var(--fg-2); margin-top: 1px; }
+
+.report-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.report-btn:active { background: var(--primary-dark); }
+.report-btn svg { width: 16px; height: 16px; }
+
+.day-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 14px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.day-tabs::-webkit-scrollbar { display: none; }
+
+.day-tab {
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--fg-2);
+  box-shadow: var(--shadow-s);
+  font-family: var(--font);
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.3;
+}
+
+.day-tab .day-num {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.day-tab .day-date {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-top: 1px;
+}
+
+.day-tab.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(45,139,122,0.25);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 100px;
+}
+.content::-webkit-scrollbar { display: none; }
+
+.chart-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-s);
+}
+
+.chart-card-title { font-size: 15px; font-weight: 600; color: var(--fg); margin-bottom: 16px; }
+
+.donut-container { display: flex; align-items: center; gap: 16px; }
+.donut-svg { width: 130px; height: 130px; flex-shrink: 0; }
+.donut-legend { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.legend-label { flex: 1; color: var(--fg-2); }
+.legend-value { font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; font-size: 12px; }
+.legend-pct { font-size: 11px; color: var(--muted); width: 32px; text-align: right; }
+
+.trend-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-s);
+}
+
+.trend-title { font-size: 15px; font-weight: 600; color: var(--fg); margin-bottom: 16px; }
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 120px;
+  padding-bottom: 22px;
+  position: relative;
+}
+
+.bar-chart::before {
+  content: '';
+  position: absolute;
+  bottom: 22px;
+  left: 0;
+  right: 0;
+  height: 0.5px;
+  background: var(--border);
+}
+
+.bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.bar {
+  width: 100%;
+  max-width: 32px;
+  border-radius: 4px 4px 2px 2px;
+  transition: height 0.6s ease;
+}
+
+.bar-label {
+  font-size: 10px;
+  color: var(--muted);
+  position: absolute;
+  bottom: -18px;
+  white-space: nowrap;
+}
+
+.bar-value {
+  font-size: 10px;
+  color: var(--fg-2);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-s);
+}
+
+.ranking-title { font-size: 15px; font-weight: 600; color: var(--fg); margin-bottom: 12px; }
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.ranking-item:last-child { border-bottom: none; }
+
+.ranking-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ranking-num.top { background: var(--price); color: #fff; }
+.ranking-num.normal { background: var(--border); color: var(--fg-2); }
+
+.ranking-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ranking-info { flex: 1; }
+.ranking-name { font-size: 14px; font-weight: 500; color: var(--fg); }
+.ranking-detail { font-size: 12px; color: var(--muted); }
+
+.ranking-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--price);
+  font-variant-numeric: tabular-nums;
+}
+
+.day-card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-s);
+}
+
+.day-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.day-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.day-card-title .day-label {
+  font-weight: 700;
+}
+
+.day-card-title .date-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.day-card-subtitle { font-size: 12px; color: var(--muted); }
+
+.day-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.day-row:last-child { border-bottom: none; }
+.day-row-left { display: flex; align-items: center; gap: 10px; }
+
+.day-row-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.day-row-icon svg { width: 15px; height: 15px; }
+
+.day-row-info { font-size: 13px; color: var(--fg); font-weight: 500; }
+.day-row-people { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.day-row-right { text-align: right; }
+
+.day-row-amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--price);
+  font-variant-numeric: tabular-nums;
+}
+
+.day-row-per { font-size: 11px; color: var(--muted); }
+
+.tab-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 82px;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 6px;
+  z-index: 80;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 4px 16px;
+  font-family: var(--font);
+  position: relative;
+}
+
+.tab-item.active { color: var(--primary); }
+
+.tab-item.active::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+
+.tab-item svg { width: 22px; height: 22px; }
+.tab-label { font-weight: 500; }
+
+.home-indicator {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  opacity: 0.2;
+}
+
+.notif-icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-s);
+  cursor: pointer;
+  color: var(--fg-2);
+  position: relative;
+  flex-shrink: 0;
+}
+.notif-icon-btn svg { width: 18px; height: 18px; }
+
+.notif-badge {
+  position: absolute;
+  top: -3px; right: -3px;
+  min-width: 18px; height: 18px; border-radius: 9px;
+  background: #E05A38; color: #fff; font-size: 10px; font-weight: 700;
+  display: none; align-items: center; justify-content: center;
+  padding: 0 5px;
+}
+
+/* ═══════════════════════════════════════════════════
+   NOTIFICATION PANEL — Redesigned rich cards
+   ═══════════════════════════════════════════════════ */
+
+.notif-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 200;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+  border-radius: 40px;
+  overflow: hidden;
+}
+.notif-overlay.open { opacity: 1; pointer-events: auto; }
+
+.notif-panel {
+  position: absolute;
+  top: 0; right: 0;
+  width: 300px; height: 100%;
+  background: var(--surface);
+  box-shadow: -8px 0 32px rgba(0,0,0,0.18);
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+  display: flex; flex-direction: column;
+  z-index: 1;
+}
+.notif-overlay.open .notif-panel { transform: translateX(0); }
+
+.notif-panel-header {
+  padding: 48px 18px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.notif-panel-header h3 { font-size: 17px; font-weight: 700; color: var(--fg); }
+.notif-mark-all {
+  font-size: 13px; color: var(--primary); font-weight: 500;
+  background: var(--primary-light); border: none;
+  cursor: pointer; padding: 5px 12px;
+  border-radius: 12px; transition: opacity 0.15s;
+  font-family: var(--font);
+}
+.notif-mark-all:active { opacity: 0.7; }
+
+/* ── Filter Tabs ── */
+.notif-tabs {
+  display: flex; gap: 8px;
+  padding: 6px 18px 10px;
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0; overflow-x: auto;
+}
+.notif-tabs::-webkit-scrollbar { display: none; }
+.notif-tab-btn {
+  padding: 5px 14px; border-radius: 14px;
+  font-size: 12px; font-weight: 500; white-space: nowrap;
+  background: var(--bg); color: var(--fg-2);
+  border: none; cursor: pointer;
+  font-family: var(--font); transition: all 0.15s;
+}
+.notif-tab-btn.active { background: var(--primary); color: #fff; }
+
+/* ── Rich Card ── */
+.notif-card {
+  padding: 14px 18px;
+  border-bottom: 0.5px solid var(--border);
+  cursor: pointer; transition: background 0.15s;
+  position: relative;
+}
+.notif-card:active { background: var(--bg); }
+.notif-card.unread { background: #F8FDFB; }
+
+.notif-dot {
+  position: absolute; left: 7px; top: 20px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--primary);
+  opacity: 0;
+}
+.notif-card.unread .notif-dot { opacity: 1; }
+
+.notif-card-hd {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.notif-card-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.notif-card-icon svg { width: 15px; height: 15px; }
+.notif-card-title { font-size: 14px; font-weight: 600; color: var(--fg); flex: 1; }
+.notif-card-time { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+
+.notif-card-body { padding-left: 40px; }
+
+/* ── Progress bar ── */
+.notif-progress { }
+.notif-progress-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 12px; color: var(--fg-2); margin-bottom: 6px;
+}
+.notif-pct { font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
+.notif-mini-bar {
+  height: 4px; background: var(--border); border-radius: 2px;
+  overflow: hidden; margin-bottom: 8px;
+}
+.notif-mini-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+.notif-hint { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+/* ── Stats row ── */
+.notif-stats {
+  display: flex; gap: 16px; margin-bottom: 10px;
+}
+.notif-stat-item { text-align: center; }
+.ns-val { display: block; font-size: 15px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
+.ns-label { display: block; font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+/* ── Category tags ── */
+.notif-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.notif-tag {
+  padding: 3px 8px; border-radius: 6px;
+  font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+
+/* ── Expense preview ── */
+.notif-expense {
+  display: flex; align-items: center; gap: 10px;
+}
+.ne-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ne-icon svg { width: 16px; height: 16px; }
+.ne-info { flex: 1; min-width: 0; }
+.ne-desc { display: block; font-size: 13px; font-weight: 500; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ne-meta { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.ne-amount { font-size: 16px; font-weight: 700; color: var(--price); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+/* ── Empty state ── */
+.notif-empty {
+  padding: 60px 20px; text-align: center;
+  font-size: 14px; color: var(--muted);
+}
+.notif-empty svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.25; }
+
+/* ── Settlement items ── */
+.notif-settle-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 0; border-bottom: 0.5px solid var(--border);
+}
+.notif-settle-item:last-child { border-bottom: none; }
+.notif-settle-name { font-size: 13px; font-weight: 500; color: var(--fg); }
+.notif-settle-arrow { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+.notif-settle-amount { font-size: 14px; font-weight: 700; color: var(--price); font-variant-numeric: tabular-nums; margin-left: auto; }
+.notif-settle-total { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ── Duplicate items ── */
+.notif-dupe { display: flex; gap: 6px; }
+.notif-dupe-item {
+  flex: 1; background: var(--bg); border-radius: 8px; padding: 10px;
+}
+.notif-dupe-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+.notif-dupe-amount { font-size: 14px; font-weight: 700; color: var(--price); font-variant-numeric: tabular-nums; }
+.notif-dupe-desc { font-size: 11px; color: var(--fg-2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notif-dupe-time { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.notif-dupe-badges { display: flex; gap: 4px; margin-top: 6px; }
+.notif-dupe-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 500; background: #FFF8E1; color: #F57F17; }
+
+/* ── Split pending ── */
+.notif-split-members { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+.notif-split-pill {
+  padding: 3px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 500; background: #F3E5F5; color: #7B1FA2;
+}
+.notif-split-items { }
+.notif-split-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0; border-bottom: 0.5px solid var(--border);
+}
+.notif-split-row:last-child { border-bottom: none; }
+.notif-split-desc { flex: 1; font-size: 12px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notif-split-absent { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+
+/* ── Category overspend ── */
+.notif-cat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.notif-cat-icon {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.notif-cat-icon svg { width: 14px; height: 14px; }
+.notif-cat-name { font-size: 14px; font-weight: 600; color: var(--fg); flex: 1; }
+.notif-cat-pct { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.notif-cat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ── Daily avg overspend ── */
+.notif-avg-compare { display: flex; gap: 12px; margin-bottom: 8px; }
+.notif-avg-item { flex: 1; text-align: center; padding: 8px; background: var(--bg); border-radius: 8px; }
+.notif-avg-label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 2px; }
+.notif-avg-val { display: block; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.notif-avg-over { font-size: 11px; color: var(--danger); font-weight: 500; margin-bottom: 6px; }
+
+/* ── Record reminder ── */
+.notif-reminder-text { font-size: 13px; color: var(--fg-2); line-height: 1.5; }
+.notif-reminder-count { font-size: 24px; font-weight: 700; color: var(--fg); margin-bottom: 2px; }
+.notif-reminder-hint { font-size: 11px; color: var(--muted); margin-top: 6px; padding: 6px 10px; background: var(--bg); border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="right">
+        <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1D1D1F"/><rect x="4.5" y="5" width="3" height="7" rx="0.5" fill="#1D1D1F"/><rect x="9" y="2" width="3" height="10" rx="0.5" fill="#1D1D1F"/><rect x="13.5" y="0" width="2.5" height="12" rx="0.5" fill="#1D1D1F" opacity="0.3"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 3.6C9.8 3.6 11.4 4.3 12.6 5.5" stroke="#1D1D1F" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M8 6.4C9 6.4 9.9 6.8 10.5 7.5" stroke="#1D1D1F" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="8" cy="10" r="1.2" fill="#1D1D1F"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12"><rect x="0.5" y="1" width="21" height="10" rx="2.5" stroke="#1D1D1F" stroke-width="0.8" fill="none"/><rect x="2" y="2.5" width="15" height="7" rx="1.2" fill="#1D1D1F"/><rect x="22.5" y="4" width="2.5" height="4" rx="1" fill="#1D1D1F" opacity="0.4"/></svg>
+      </span>
+    </div>
+
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>消费统计</h1>
+        <p id="tripNameLabel"></p>
+      </div>
+      <button class="notif-icon-btn" id="notifBtn" onclick="openNotifications()" style="margin-left:auto;margin-right:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="notif-badge" id="notifBadge"></span>
+      </button>
+      <a href="04-summary.html" class="report-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        报告
+      </a>
+    </div>
+
+    <div class="day-tabs" id="dayTabsContainer"></div>
+
+    <div class="content" id="mainContent"></div>
+
+    <div class="tab-bar">
+      <button class="tab-item" onclick="location.href='01-home.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">首页</span>
+      </button>
+      <button class="tab-item" onclick="location.href='02-add-expense.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="tab-label">账单</span>
+      </button>
+      <button class="tab-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="tab-label">统计</span>
+      </button>
+      <button class="tab-item" onclick="location.href='05-settings.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">我的</span>
+      </button>
+    </div>
+
+    <div class="home-indicator"></div>
+
+    <!-- Notification Overlay -->
+    <div class="notif-overlay" id="notifOverlay" onclick="closeNotifications(event)">
+      <div class="notif-panel" onclick="event.stopPropagation()">
+        <div class="notif-panel-header">
+          <h3>通知</h3>
+          <button class="notif-mark-all" onclick="markAllRead()">全部已读</button>
+        </div>
+        <div class="notif-tabs" id="notifTabs">
+          <button class="notif-tab-btn active" data-filter="all">全部</button>
+          <button class="notif-tab-btn" data-filter="budget">预算</button>
+          <button class="notif-tab-btn" data-filter="daily">日报</button>
+          <button class="notif-tab-btn" data-filter="alert">提醒</button>
+        </div>
+        <div class="notif-list" id="notifList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/trip-data.js"></script>
+<script>
+(function () {
+  var D = TripData;
+  var totalDays = D.getTotalDays();
+  var curDay = D.getCurrentDayNumber();
+  var activeDay = curDay;
+
+  document.getElementById('tripNameLabel').textContent = D.trip.name;
+
+  function formatDateShort(dayNum) {
+    var d = D.dayNumToDate(dayNum);
+    var parts = d.split('-');
+    return parseInt(parts[1]) + '/' + parseInt(parts[2]);
+  }
+
+  // Day tabs
+  function renderDayTabs() {
+    var container = document.getElementById('dayTabsContainer');
+    var html = '';
+    for (var i = 1; i <= totalDays; i++) {
+      html += '<button class="day-tab' + (i === activeDay ? ' active' : '' ) + '" data-day="' + i + '">' +
+        '<span class="day-num">Day ' + i + '</span>' +
+        '<span class="day-date">' + formatDateShort(i) + '</span>' +
+        '</button>';
+    }
+    container.innerHTML = html;
+
+    container.querySelectorAll('.day-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        activeDay = parseInt(tab.getAttribute('data-day'));
+        container.querySelectorAll('.day-tab').forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        renderContent();
+      });
+    });
+
+    var activeTab = container.querySelector('.day-tab.active');
+    if (activeTab) {
+      activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }
+
+  function renderContent() {
+    var html = '';
+    var upToDay = activeDay;
+    var totalSpent = D.getTotalSpent(upToDay);
+    var breakdown = D.getCategoryBreakdown(upToDay);
+    var daily = D.getDailyBreakdown(upToDay);
+    var ranking = D.getMemberRanking(upToDay);
+    var dayExps = D.getExpensesForDay(activeDay);
+    var dayTotal = D.getTotalSpent(activeDay) - D.getTotalSpent(activeDay - 1);
+
+    // Donut chart
+    html += '<div class="chart-card"><div class="chart-card-title">消费结构</div>';
+    html += '<div class="donut-container">';
+
+    var circumference = 2 * Math.PI * 50;
+    var offset = 0;
+    html += '<svg class="donut-svg" viewBox="0 0 130 130">';
+    html += '<circle cx="65" cy="65" r="50" fill="none" stroke="#E5E5EA" stroke-width="16"/>';
+
+    breakdown.forEach(function (item) {
+      var cat = D.getCategoryById(item.catId);
+      var color = cat ? cat.color : '#6E7179';
+      var segLen = circumference * (item.pct / 100);
+      html += '<circle cx="65" cy="65" r="50" fill="none" stroke="' + color + '" stroke-width="16"' +
+        ' stroke-dasharray="' + segLen.toFixed(1) + ' ' + (circumference - segLen).toFixed(1) + '"' +
+        ' stroke-dashoffset="' + (-offset).toFixed(1) + '"' +
+        ' transform="rotate(-90 65 65)"/>';
+      offset += segLen;
+    });
+
+    html += '<text x="65" y="60" text-anchor="middle" font-size="16" font-weight="700" fill="#1D1D1F" font-family="-apple-system,system-ui,sans-serif">' + D.formatMoney(totalSpent) + '</text>';
+    html += '<text x="65" y="78" text-anchor="middle" font-size="10" fill="#A0A4AE" font-family="-apple-system,system-ui,sans-serif">总消费</text>';
+    html += '</svg>';
+
+    html += '<div class="donut-legend">';
+    breakdown.slice(0, 6).forEach(function (item) {
+      var cat = D.getCategoryById(item.catId);
+      var color = cat ? cat.color : '#6E7179';
+      html += '<div class="legend-item">' +
+        '<span class="legend-dot" style="background:' + color + '"></span>' +
+        '<span class="legend-label">' + (cat ? cat.name : item.catId) + '</span>' +
+        '<span class="legend-value">' + D.formatMoney(item.total) + '</span>' +
+        '<span class="legend-pct">' + item.pct + '%</span></div>';
+    });
+    html += '</div></div></div>';
+
+    // Daily trend bar chart
+    html += '<div class="trend-card"><div class="trend-title">每日消费趋势</div>';
+    html += '<div class="bar-chart">';
+
+    var maxDayTotal = Math.max.apply(null, daily.map(function (d) { return d.total || 1; }));
+    daily.forEach(function (d) {
+      var h = d.total > 0 ? Math.max(8, Math.round(d.total / maxDayTotal * 88)) : 16;
+      var isHighest = d.total === maxDayTotal && d.total > 0;
+      var bg = d.total > 0 ? (isHighest ? 'var(--price)' : 'var(--primary)') : 'var(--border)';
+      var valText = d.total > 0 ? D.formatMoneyNoSymbol(d.total) : '—';
+
+      html += '<div class="bar-group">' +
+        '<div class="bar-value">' + valText + '</div>' +
+        '<div class="bar" style="height:' + h + 'px;background:' + bg + '"></div>' +
+        '<div class="bar-label">' + d.day + '日</div></div>';
+    });
+
+    html += '</div></div>';
+
+    // Per-person ranking
+    html += '<div class="ranking-card"><div class="ranking-title">人均消费排行</div>';
+    ranking.forEach(function (r, idx) {
+      var numClass = idx < 2 ? ' top' : ' normal';
+      var detail = '参与 ' + r.count + ' 笔';
+      if (r.absent > 0) detail += ' · 缺席' + r.absent + '笔';
+      html += '<div class="ranking-item">' +
+        '<div class="ranking-num' + numClass + '">' + (idx + 1) + '</div>' +
+        '<div class="ranking-avatar" style="background:' + r.color + '">' + r.name.charAt(0) + '</div>' +
+        '<div class="ranking-info"><div class="ranking-name">' + r.name + '</div>' +
+          '<div class="ranking-detail">' + detail + '</div></div>' +
+        '<div class="ranking-amount">' + D.formatMoney(r.total) + '</div></div>';
+    });
+    html += '</div>';
+
+    // Day breakdown detail
+    var dayInfo = daily.find(function (d) { return d.day === activeDay; });
+    if (dayInfo && dayInfo.expenses.length > 0) {
+      html += '<div class="day-card"><div class="day-card-header">' +
+        '<div class="day-card-title"><span class="day-label">Day ' + activeDay + '</span><span class="date-label">' + formatDateShort(activeDay) + '</span></div>' +
+        '<div class="day-card-subtitle">' + dayInfo.expenses.length + '笔消费 · ' + dayInfo.participantCount + '人参与 · 人均 ' + D.formatMoney(dayInfo.perPerson) + '</div></div>';
+
+      dayInfo.expenses.forEach(function (exp) {
+        var cat = D.getCategoryById(exp.cat);
+        var pCount = exp.p.length;
+        html += '<div class="day-row"><div class="day-row-left">' +
+          '<div class="day-row-icon" style="background:' + (cat ? cat.bgColor : '#F5F5F5') + ';color:' + (cat ? cat.color : '#6E7179') + '">' + D.getIcon(exp.cat) + '</div>' +
+          '<div><div class="day-row-info">' + exp.desc + '</div>' +
+            '<div class="day-row-people">' + pCount + '人参与</div></div></div>' +
+          '<div class="day-row-right"><div class="day-row-amount">' + D.formatMoney(exp.amount) + '</div>' +
+            '<div class="day-row-per">人均 ' + D.formatMoney(Math.round(exp.amount / pCount)) + '</div></div></div>';
+      });
+
+      html += '</div>';
+    }
+
+    document.getElementById('mainContent').innerHTML = html;
+  }
+
+  renderDayTabs();
+  renderContent();
+
+  // ═══════════════════════════════════════════════════
+  // NOTIFICATION SYSTEM — Rich cards + filter tabs
+  // ═══════════════════════════════════════════════════
+
+  var currentFilter = 'all';
+
+  function fmtAgo(ts) {
+    var delta = Date.now() - new Date(ts).getTime();
+    if (delta < 60000) return '刚刚';
+    if (delta < 3600000) return Math.floor(delta / 60000) + '分钟前';
+    if (delta < 86400000) return Math.floor(delta / 3600000) + '小时前';
+    return Math.floor(delta / 86400000) + '天前';
+  }
+
+  function getNotifIconSvg(type) {
+    switch (type) {
+      case 'budget_alert':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+      case 'daily_report':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+      case 'abnormal_spending':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      case 'trip_milestone':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      case 'category_overspend':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg>';
+      case 'daily_avg_overspend':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>';
+      case 'record_reminder':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+      case 'split_pending':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
+      case 'settlement_reminder':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+      case 'duplicate_expense':
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+      default:
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/></svg>';
+    }
+  }
+
+  function getNotifBg(type) {
+    switch (type) {
+      case 'budget_alert': return '#FDF0EC';
+      case 'daily_report': return '#E3F2FD';
+      case 'abnormal_spending': return '#FFF8E1';
+      case 'trip_milestone': return '#E6F3F0';
+      case 'category_overspend': return '#FFF3E0';
+      case 'daily_avg_overspend': return '#FCE4EC';
+      case 'record_reminder': return '#E3F2FD';
+      case 'split_pending': return '#F3E5F5';
+      case 'settlement_reminder': return '#E6F3F0';
+      case 'duplicate_expense': return '#FFF8E1';
+      default: return '#F5F5F5';
+    }
+  }
+
+  function getNotifFg(type) {
+    switch (type) {
+      case 'budget_alert': return 'var(--price)';
+      case 'daily_report': return '#1565C0';
+      case 'abnormal_spending': return 'var(--warning)';
+      case 'trip_milestone': return 'var(--primary)';
+      case 'category_overspend': return '#E65100';
+      case 'daily_avg_overspend': return '#C62828';
+      case 'record_reminder': return '#1565C0';
+      case 'split_pending': return '#7B1FA2';
+      case 'settlement_reminder': return 'var(--primary)';
+      case 'duplicate_expense': return '#F57F17';
+      default: return 'var(--fg-2)';
+    }
+  }
+
+  window.openNotifications = function () {
+    D.generateNotifications();
+    currentFilter = 'all';
+    syncTabUI();
+    renderNotifications();
+    document.getElementById('notifOverlay').classList.add('open');
+  };
+
+  window.closeNotifications = function (e) {
+    if (e && e.target !== document.getElementById('notifOverlay')) return;
+    document.getElementById('notifOverlay').classList.remove('open');
+  };
+
+  window.readNotif = function (id) {
+    D.markNotificationRead(id);
+    renderNotifications();
+  };
+
+  window.markAllRead = function () {
+    D.markAllNotificationsRead();
+    renderNotifications();
+  };
+
+  function buildCard(n) {
+    var cls = n.read === false ? 'notif-card unread' : 'notif-card';
+    var bg = getNotifBg(n.type);
+    var fg = getNotifFg(n.type);
+    var icon = getNotifIconSvg(n.type);
+
+    var h = '<div class="' + cls + '" onclick="readNotif(\'' + n.id + '\')">';
+    h += '<span class="notif-dot"></span>';
+
+    h += '<div class="notif-card-hd">';
+    h += '<span class="notif-card-icon" style="background:' + bg + ';color:' + fg + '">' + icon + '</span>';
+    h += '<span class="notif-card-title">' + n.title + '</span>';
+    h += '<span class="notif-card-time">' + fmtAgo(n.time) + '</span>';
+    h += '</div>';
+
+    if (n.data) {
+      h += '<div class="notif-card-body">';
+
+      if (n.type === 'budget_alert') {
+        var d = n.data;
+        var barColor = d.pct >= 100 ? 'var(--danger)' : d.pct >= 90 ? 'var(--warning)' : 'var(--primary)';
+        h += '<div class="notif-progress">';
+        h += '<div class="notif-progress-row"><span>' + D.formatMoney(d.spent) + ' / ' + D.formatMoney(d.budget) + '</span><span class="notif-pct" style="color:' + barColor + '">' + d.pct + '%</span></div>';
+        h += '<div class="notif-mini-bar"><div class="notif-mini-fill" style="width:' + Math.min(d.pct, 100) + '%;background:' + barColor + '"></div></div>';
+        if (d.over && d.over > 0) {
+          h += '<div class="notif-hint" style="color:var(--danger)">已超支 ' + D.formatMoney(d.over) + '，请控制后续支出</div>';
+        } else if (d.dailyBudget && d.dailyBudget > 0) {
+          h += '<div class="notif-hint">建议剩余 ' + d.remainingDays + ' 天日均不超过 ' + D.formatMoney(d.dailyBudget) + '</div>';
+        }
+        h += '</div>';
+
+      } else if (n.type === 'daily_report') {
+        var d = n.data;
+        h += '<div class="notif-stats">';
+        h += '<div class="notif-stat-item"><span class="ns-val">' + D.formatMoneyNoSymbol(d.total) + '</span><span class="ns-label">总消费</span></div>';
+        h += '<div class="notif-stat-item"><span class="ns-val">' + d.count + '笔</span><span class="ns-label">笔数</span></div>';
+        h += '<div class="notif-stat-item"><span class="ns-val">' + D.formatMoneyNoSymbol(d.perPerson) + '</span><span class="ns-label">人均</span></div>';
+        h += '</div>';
+        if (d.topCats && d.topCats.length > 0) {
+          h += '<div class="notif-tags">';
+          d.topCats.forEach(function (tc) {
+            var cat = D.getCategoryById(tc.cat);
+            var cBg = cat ? cat.bgColor : '#F5F5F5';
+            var cFg = cat ? cat.color : '#6E7179';
+            h += '<span class="notif-tag" style="background:' + cBg + ';color:' + cFg + '">' + (cat ? cat.name : tc.cat) + ' ' + D.formatMoneyNoSymbol(tc.amount) + '</span>';
+          });
+          h += '</div>';
+        }
+        if (d.vsYesterday !== null && d.vsYesterday !== 0) {
+          var sign = d.vsYesterday > 0 ? '+' : '';
+          h += '<div class="notif-hint">较昨日 ' + sign + D.formatMoney(d.vsYesterday) + '</div>';
+        }
+
+      } else if (n.type === 'abnormal_spending') {
+        var d = n.data;
+        var cat = D.getCategoryById(d.cat);
+        h += '<div class="notif-expense">';
+        h += '<span class="ne-icon" style="background:' + (cat ? cat.bgColor : '#FFF3E0') + ';color:' + (cat ? cat.color : '#E65100') + '">' + D.getIcon(d.cat) + '</span>';
+        h += '<div class="ne-info"><span class="ne-desc">' + (d.catName ? d.catName + ' · ' : '') + d.desc + '</span>';
+        h += '<span class="ne-meta">是均值 ¥' + D.formatMoneyNoSymbol(d.avgAmount) + ' 的 ' + (d.amount / Math.max(1, d.avgAmount)).toFixed(1) + ' 倍</span></div>';
+        h += '<span class="ne-amount">' + D.formatMoneyNoSymbol(d.amount) + '</span>';
+        h += '</div>';
+
+      } else if (n.type === 'trip_milestone') {
+        var d = n.data;
+        h += '<div class="notif-progress">';
+        h += '<div class="notif-progress-row"><span>Day ' + d.day + ' / ' + d.totalDays + '</span><span class="notif-pct">' + d.pct + '%</span></div>';
+        h += '<div class="notif-mini-bar"><div class="notif-mini-fill" style="width:' + d.pct + '%;background:var(--primary)"></div></div>';
+        h += '<div class="notif-hint">累计消费 ' + D.formatMoney(d.totalSpent) + (d.remain > 0 ? ' · 剩余预算 ' + D.formatMoney(d.remain) : '') + '</div>';
+        h += '</div>';
+
+      } else if (n.type === 'category_overspend') {
+        var d = n.data;
+        var cat = D.getCategoryById(d.catId);
+        var catBg = cat ? cat.bgColor : '#FFF3E0';
+        var catFg = cat ? cat.color : '#E65100';
+        h += '<div class="notif-cat-row">';
+        h += '<span class="notif-cat-icon" style="background:' + catBg + ';color:' + catFg + '">' + D.getIcon(d.catId) + '</span>';
+        h += '<span class="notif-cat-name">' + d.catName + '</span>';
+        h += '<span class="notif-cat-pct" style="color:' + catFg + '">' + d.pct + '%</span>';
+        h += '</div>';
+        h += '<div class="notif-mini-bar"><div class="notif-mini-fill" style="width:' + Math.min(d.pct, 100) + '%;background:' + catFg + '"></div></div>';
+        h += '<div class="notif-cat-sub">' + d.count + '笔 · 共 ¥' + D.formatMoneyNoSymbol(d.total) + ' · 均笔 ¥' + D.formatMoneyNoSymbol(d.avgPerExpense) + '</div>';
+
+      } else if (n.type === 'daily_avg_overspend') {
+        var d = n.data;
+        h += '<div class="notif-avg-compare">';
+        h += '<div class="notif-avg-item"><span class="notif-avg-label">实际日均</span><span class="notif-avg-val" style="color:var(--price)">¥' + D.formatMoneyNoSymbol(d.actualDailyAvg) + '</span></div>';
+        h += '<div class="notif-avg-item"><span class="notif-avg-label">预算日均</span><span class="notif-avg-val" style="color:var(--primary)">¥' + D.formatMoneyNoSymbol(d.budgetDailyAvg) + '</span></div>';
+        h += '</div>';
+        h += '<div class="notif-avg-over">超出 ¥' + D.formatMoneyNoSymbol(d.overAmount) + ' / 天</div>';
+        if (d.adjustedDailyBudget > 0) {
+          h += '<div class="notif-hint">建议剩余每天不超过 ¥' + D.formatMoneyNoSymbol(d.adjustedDailyBudget) + '</div>';
+        }
+
+      } else if (n.type === 'record_reminder') {
+        var d = n.data;
+        h += '<div class="notif-reminder-text">';
+        if (d.todayCount === 0) {
+          h += '今天还没有消费记录';
+        } else {
+          h += '今天只记了 <span class="notif-reminder-count">' + d.todayCount + '</span> 笔';
+        }
+        h += '</div>';
+        h += '<div class="notif-reminder-hint">' + d.hint + '</div>';
+
+      } else if (n.type === 'split_pending') {
+        var d = n.data;
+        h += '<div class="notif-split-members">';
+        d.absentMembers.forEach(function (name) {
+          h += '<span class="notif-split-pill">' + name + '</span>';
+        });
+        h += '</div>';
+        h += '<div class="notif-split-items">';
+        d.recentItems.forEach(function (item) {
+          h += '<div class="notif-split-row">';
+          h += '<span class="notif-split-desc">' + item.desc + '</span>';
+          h += '<span class="ne-amount" style="font-size:13px">¥' + D.formatMoneyNoSymbol(item.amount) + '</span>';
+          h += '</div>';
+        });
+        h += '</div>';
+        h += '<div class="notif-hint">共 ' + d.pendingCount + ' 笔待确认</div>';
+
+      } else if (n.type === 'settlement_reminder') {
+        var d = n.data;
+        d.settlements.forEach(function (s) {
+          h += '<div class="notif-settle-item">';
+          h += '<span class="notif-settle-name">' + s.from + '</span>';
+          h += '<span class="notif-settle-arrow">→</span>';
+          h += '<span class="notif-settle-name">' + s.to + '</span>';
+          h += '<span class="notif-settle-amount">¥' + D.formatMoneyNoSymbol(s.amount) + '</span>';
+          h += '</div>';
+        });
+        h += '<div class="notif-settle-total">待结算总额 ¥' + D.formatMoneyNoSymbol(d.totalUnsettled) + '</div>';
+
+      } else if (n.type === 'duplicate_expense') {
+        var d = n.data;
+        h += '<div class="notif-dupe">';
+        h += '<div class="notif-dupe-item">';
+        h += '<div class="notif-dupe-label">记录 1</div>';
+        h += '<div class="notif-dupe-amount">¥' + D.formatMoneyNoSymbol(d.expense1.amount) + '</div>';
+        h += '<div class="notif-dupe-desc">' + d.expense1.desc + '</div>';
+        h += '<div class="notif-dupe-time">' + d.expense1.time + '</div>';
+        h += '</div>';
+        h += '<div class="notif-dupe-item">';
+        h += '<div class="notif-dupe-label">记录 2</div>';
+        h += '<div class="notif-dupe-amount">¥' + D.formatMoneyNoSymbol(d.expense2.amount) + '</div>';
+        h += '<div class="notif-dupe-desc">' + d.expense2.desc + '</div>';
+        h += '<div class="notif-dupe-time">' + d.expense2.time + '</div>';
+        h += '</div>';
+        h += '</div>';
+        h += '<div class="notif-dupe-badges">';
+        if (d.sameAmount) h += '<span class="notif-dupe-badge">同金额</span>';
+        if (d.sameCategory) h += '<span class="notif-dupe-badge">同分类</span>';
+        h += '</div>';
+      }
+
+      h += '</div>';
+    }
+
+    h += '</div>';
+    return h;
+  }
+
+  function syncTabUI() {
+    var tabs = document.getElementById('notifTabs');
+    if (!tabs) return;
+    tabs.querySelectorAll('.notif-tab-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
+    });
+  }
+
+  function renderNotifications() {
+    var list = D.getNotifications();
+    var container = document.getElementById('notifList');
+    var badge = document.getElementById('notifBadge');
+    if (!container) return;
+
+    var unread = 0;
+    var html = '';
+
+    if (list.length === 0) {
+      html = '<div class="notif-empty"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div>暂无通知</div></div>';
+    } else {
+      for (var i = 0; i < list.length; i++) {
+        var n = list[i];
+        if (n.read === false) unread++;
+        if (currentFilter !== 'all' && n.category !== currentFilter) continue;
+        html += buildCard(n);
+      }
+      if (html === '') {
+        html = '<div class="notif-empty"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div>该分类暂无通知</div></div>';
+      }
+    }
+
+    container.innerHTML = html;
+
+    if (badge) {
+      if (unread > 0) {
+        badge.textContent = unread > 99 ? '99+' : unread;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  }
+
+  (function bindTabs() {
+    var tabs = document.getElementById('notifTabs');
+    if (!tabs) return;
+    tabs.addEventListener('click', function (e) {
+      var btn = e.target.closest('.notif-tab-btn');
+      if (!btn) return;
+      currentFilter = btn.getAttribute('data-filter');
+      syncTabUI();
+      renderNotifications();
+    });
+  })();
+
+  renderNotifications();
+
+})();
+</script>
+
+</body>
+</html>

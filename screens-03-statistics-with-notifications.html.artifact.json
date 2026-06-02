@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "统计页 — 通知系统",
+  "entry": "screens-03-statistics-with-notifications.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-06-01T09:32:09.448Z",
+  "updatedAt": "2026-06-01T09:32:09.451Z",
+  "sourceSkillId": "ui-ux-pro-max",
+  "metadata": {
+    "identifier": "screens-03-statistics-with-notifications",
+    "artifactType": "text/html",
+    "inferred": false
+  }
+}

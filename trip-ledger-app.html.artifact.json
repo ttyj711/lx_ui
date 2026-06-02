@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "旅途账本 — 旅行费用记录 APP",
+  "entry": "trip-ledger-app.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-06-01T02:51:21.699Z",
+  "updatedAt": "2026-06-01T02:51:21.708Z",
+  "metadata": {
+    "identifier": "trip-ledger-app",
+    "artifactType": "text/html",
+    "inferred": false
+  }
+}

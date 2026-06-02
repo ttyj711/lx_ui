@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "首页 — 通知系统",
+  "entry": "screens-01-home-with-notifications.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-06-01T09:29:26.250Z",
+  "updatedAt": "2026-06-01T09:29:26.254Z",
+  "sourceSkillId": "ui-ux-pro-max",
+  "metadata": {
+    "identifier": "screens-01-home-with-notifications",
+    "artifactType": "text/html",
+    "inferred": false
+  }
+}

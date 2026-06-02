@@ -932,77 +932,21 @@ body {
 
   html += renderTripCard();
 
-  // ── Trip Management ──
+  // ── Trip Management (simplified) ──
   html += '<div class="section"><div class="section-header">旅程管理</div><div class="section-group">';
-
-  var allTrips = D.getTrips();
-  var activeTrips = D.getActiveTrips();
-  var archivedTrips = D.getArchivedTrips();
-  var currentId = D.getCurrentTripId();
-
-  // Active trips
-  activeTrips.forEach(function (trip) {
-    var isCurrent = trip.id === currentId;
-    var days = 0;
-    try { days = Math.round((new Date(trip.endDate) - new Date(trip.startDate)) / 86400000) + 1; } catch(e) {}
-    var expenseCount = trip.expenses ? trip.expenses.length : 0;
-    var memberCount = trip.members ? trip.members.length : 0;
-
-    html += '<div class="trip-item" data-trip-id="' + trip.id + '">' +
-      '<div class="trip-item-icon" style="background:var(--primary-light);color:var(--primary)">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
-      '</div>' +
-      '<div class="trip-item-info">' +
-        '<div class="trip-item-name' + (isCurrent ? ' active-trip' : '') + '">' + trip.name + '</div>' +
-        '<div class="trip-item-desc">' + D.formatDateShort(trip.startDate) + ' — ' + D.formatDateShort(trip.endDate) + ' · ' + memberCount + '人 · ' + expenseCount + '笔</div>' +
-      '</div>' +
-      (isCurrent ? '<span class="trip-item-badge badge-active">当前</span>' : '') +
-      '<div class="trip-item-actions">' +
-        (!isCurrent ? '<button class="trip-action-btn" data-action="switch" data-trip-id="' + trip.id + '" title="切换"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>' : '') +
-        (allTrips.length > 1 ? '<button class="trip-action-btn danger" data-action="archive" data-trip-id="' + trip.id + '" title="归档"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg></button>' : '') +
-      '</div>' +
-    '</div>';
-  });
-
-  // Archived trips
-  if (archivedTrips.length > 0) {
-    html += '<div style="padding:8px 16px 4px"><span style="font-size:11px;color:var(--muted);font-weight:500">已归档</span></div>';
-    archivedTrips.forEach(function (trip) {
-      html += '<div class="trip-item" data-trip-id="' + trip.id + '">' +
-        '<div class="trip-item-icon" style="background:#F5F5F5;color:var(--muted)">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>' +
-        '</div>' +
-        '<div class="trip-item-info">' +
-          '<div class="trip-item-name" style="color:var(--muted)">' + trip.name + '</div>' +
-          '<div class="trip-item-desc">已归档</div>' +
-        '</div>' +
-        '<div class="trip-item-actions">' +
-          '<button class="trip-action-btn" data-action="unarchive" data-trip-id="' + trip.id + '" title="恢复"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></button>' +
-          '<button class="trip-action-btn danger" data-action="delete" data-trip-id="' + trip.id + '" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>' +
-        '</div>' +
-      '</div>';
-    });
-  }
-
-  // Create new trip button
-  html += '<div class="trip-item" id="createTripTrigger" style="color:var(--primary)">' +
+  html += '<div class="trip-item" onclick="location.href=\'06-trip-manager.html\'">' +
     '<div class="trip-item-icon" style="background:var(--primary-light);color:var(--primary)">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
     '</div>' +
-    '<div class="trip-item-info"><div class="trip-item-name" style="color:var(--primary);font-weight:500">创建新旅程</div></div>' +
+    '<div class="trip-item-info">' +
+      '<div class="trip-item-name">管理全部旅程</div>' +
+      '<div class="trip-item-desc">切换、归档、创建旅程</div>' +
+    '</div>' +
+    '<div class="trip-item-actions">' +
+      '<span class="row-chevron">' + IC.chevron + '</span>' +
+    '</div>' +
   '</div>';
-
   html += '</div></div>';
-
-  // Create trip expandable panel
-  html += '<div class="section"><div class="expand-panel" id="panel-createTrip"><div class="expand-content">' +
-    '<div class="create-trip-form">' +
-      '<div class="form-row"><div class="form-field" style="flex:2"><div class="form-label">旅程名称</div><input class="form-input" id="newTripName" type="text" placeholder="如：东京自由行5日游"></div></div>' +
-      '<div class="form-row"><div class="form-field"><div class="form-label">开始日期</div><input class="form-input" id="newTripStart" type="date"></div><div class="form-field"><div class="form-label">结束日期</div><input class="form-input" id="newTripEnd" type="date"></div></div>' +
-      '<div class="form-row"><div class="form-field" style="flex:1"><div class="form-label">预算 (元)</div><input class="form-input" id="newTripBudget" type="number" placeholder="10000"></div></div>' +
-      '<button class="form-create-btn" id="createTripBtn">创建旅程</button>' +
-    '</div>' +
-  '</div></div></div>';
 
   // ── 旅程默认 ──
   html += '<div class="section"><div class="section-header">旅程默认</div><div class="section-group">';
@@ -1283,100 +1227,13 @@ body {
     });
   });
 
-  // ── Trip management interactions ──
-
   // Switch trip button on trip card
   var switchBtn = document.getElementById('switchTripBtn');
   if (switchBtn) {
     switchBtn.addEventListener('click', function () {
-      var tripSection = document.querySelector('.section .section-group');
-      if (tripSection) {
-        tripSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      location.href = '06-trip-manager.html';
     });
   }
-
-  // Trip action buttons (switch, archive, unarchive, delete)
-  document.querySelectorAll('.trip-action-btn[data-action]').forEach(function(el) {
-    el.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var action = this.getAttribute('data-action');
-      var tripId = this.getAttribute('data-trip-id');
-      if (!tripId || !action) return;
-
-      if (action === 'switch') {
-        D.switchTrip(tripId);
-        // Re-render the entire settings page to reflect the new current trip
-        location.reload();
-      } else if (action === 'archive') {
-        D.archiveTrip(tripId);
-        location.reload();
-      } else if (action === 'unarchive') {
-        D.unarchiveTrip(tripId);
-        location.reload();
-      } else if (action === 'delete') {
-        D.deleteTrip(tripId);
-        location.reload();
-      }
-    });
-  });
-
-  // Create trip trigger
-  var createTrigger = document.getElementById('createTripTrigger');
-  if (createTrigger) {
-    createTrigger.addEventListener('click', function () {
-      var panel = document.getElementById('panel-createTrip');
-      if (panel) {
-        panel.classList.add('open');
-        var nameInput = document.getElementById('newTripName');
-        if (nameInput) nameInput.focus();
-      }
-    });
-  }
-
-  // Create trip button
-  var createBtn = document.getElementById('createTripBtn');
-  if (createBtn) {
-    createBtn.addEventListener('click', function () {
-      var name = document.getElementById('newTripName').value.trim();
-      var startDate = document.getElementById('newTripStart').value;
-      var endDate = document.getElementById('newTripEnd').value;
-      var budget = parseInt(document.getElementById('newTripBudget').value) || 0;
-
-      if (!name) {
-        document.getElementById('newTripName').style.borderColor = 'var(--danger)';
-        return;
-      }
-      if (!startDate || !endDate) {
-        if (!startDate) document.getElementById('newTripStart').style.borderColor = 'var(--danger)';
-        if (!endDate) document.getElementById('newTripEnd').style.borderColor = 'var(--danger)';
-        return;
-      }
-
-      D.createTrip({
-        name: name,
-        startDate: startDate,
-        endDate: endDate,
-        budget: budget
-      });
-
-      // Navigate to home page with the new trip
-      location.href = '01-home.html';
-    });
-  }
-
-  // Clear validation styling on input focus
-  ['newTripName', 'newTripStart', 'newTripEnd'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('focus', function() {
-        this.style.borderColor = 'var(--primary)';
-      });
-      el.addEventListener('blur', function() {
-        this.style.borderColor = '';
-      });
-    }
-  });
 
 })();
 </script>

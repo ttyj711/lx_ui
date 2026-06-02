@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>旅途账本 — 旅程管理</title>
+<style>
+:root {
+  --bg: #F2F2F5;
+  --surface: #FFFFFF;
+  --fg: #1D1D1F;
+  --fg-2: #6E7179;
+  --muted: #A0A4AE;
+  --border: #E5E5EA;
+  --primary: #2D8B7A;
+  --primary-light: #E6F3F0;
+  --primary-dark: #1F6B5D;
+  --price: #E05A38;
+  --price-light: #FDF0EC;
+  --success: #34A853;
+  --success-bg: #E6F4EA;
+  --warning: #E8A020;
+  --warning-bg: #FEF7E0;
+  --danger: #D93025;
+  --danger-bg: #FCE8E6;
+  --shadow-s: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-m: 0 2px 8px rgba(0,0,0,0.07);
+  --r-xs: 6px;
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 16px;
+  --r-xl: 20px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.phone-frame {
+  width: 393px;
+  height: 852px;
+  background: #000;
+  border-radius: 50px;
+  padding: 12px;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic-island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 126px;
+  height: 36px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+.status-bar {
+  height: 54px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+  flex-shrink: 0;
+}
+
+.status-bar .time { letter-spacing: 0.02em; font-size: 16px; }
+.status-bar .right { display: flex; align-items: center; gap: 5px; }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 40px;
+  -webkit-overflow-scrolling: touch;
+}
+.content::-webkit-scrollbar { display: none; }
+
+/* Header */
+.nav-header {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px 14px;
+  gap: 10px;
+}
+
+.nav-back {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  cursor: pointer;
+  border-radius: 50%;
+}
+.nav-back:active { background: var(--primary-light); }
+.nav-back svg { width: 20px; height: 20px; }
+
+.nav-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+/* Current Trip Card */
+.trip-card {
+  margin: 0 16px 16px;
+  background: linear-gradient(145deg, #1F6B5D 0%, #2D8B7A 40%, #3DA392 100%);
+  border-radius: var(--r-xl);
+  padding: 20px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.trip-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.trip-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-m);
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.trip-card-icon svg { width: 20px; height: 20px; }
+
+.trip-card-info { flex: 1; min-width: 0; }
+.trip-card-name { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trip-card-meta { font-size: 12px; opacity: 0.8; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 6px; }
+.trip-card-meta span { display: inline-flex; align-items: center; gap: 3px; }
+
+.trip-card-progress {
+  margin-top: 2px;
+}
+
+.trip-progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.trip-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: #fff;
+  transition: width 0.3s;
+}
+
+.trip-card-stats {
+  display: flex;
+  gap: 0;
+  justify-content: space-between;
+}
+
+.trip-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.trip-stat-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.trip-stat-label { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+/* Section */
+.section {
+  margin: 0 16px 12px;
+}
+
+.section-header {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 4px 6px;
+}
+
+.section-group {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  overflow: hidden;
+  box-shadow: var(--shadow-s);
+}
+
+/* Trip list */
+.trip-list {
+  padding: 0;
+}
+
+.trip-item {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  min-height: 48px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.1s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font);
+}
+.trip-item:active { background: #F8F8FA; }
+
+.trip-item + .trip-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 52px;
+  right: 0;
+  height: 0.5px;
+  background: var(--border);
+}
+
+.trip-item-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.trip-item-icon svg { width: 16px; height: 16px; }
+
+.trip-item-info { flex: 1; min-width: 0; }
+.trip-item-name { font-size: 15px; color: var(--fg); font-weight: 400; }
+.trip-item-name.active-trip { color: var(--primary); font-weight: 600; }
+.trip-item-desc { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.trip-item-badge {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.badge-active { background: var(--primary-light); color: var(--primary); }
+.badge-archived { background: #F5F5F5; color: var(--muted); }
+
+.trip-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.trip-action-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.1s;
+}
+.trip-action-btn:active { background: #F5F5F5; }
+.trip-action-btn svg { width: 14px; height: 14px; }
+.trip-action-btn.danger:active { color: var(--danger); }
+
+/* Create trip form */
+.create-trip-form {
+  padding: 14px 16px;
+  background: #FAFAFA;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.form-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.form-input {
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-s);
+  padding: 0 10px;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--fg);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--primary); }
+
+.form-create-btn {
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: var(--r-m);
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.form-create-btn:active { opacity: 0.8; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--muted);
+}
+
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  opacity: 0.3;
+}
+.empty-icon svg { width: 100%; height: 100%; }
+
+.empty-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--fg-2);
+  margin-bottom: 4px;
+}
+
+.empty-desc {
+  font-size: 13px;
+}
+
+/* Home indicator */
+.home-indicator {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: var(--fg);
+  border-radius: 3px;
+  opacity: 0.2;
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="dynamic-island"></div>
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="right">
+        <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0" y="8" width="3" height="4" rx="0.5" fill="#1D1D1F"/><rect x="4.5" y="5" width="3" height="7" rx="0.5" fill="#1D1D1F"/><rect x="9" y="2" width="3" height="10" rx="0.5" fill="#1D1D1F"/><rect x="13.5" y="0" width="2.5" height="12" rx="0.5" fill="#1D1D1F" opacity="0.3"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 3.6C9.8 3.6 11.4 4.3 12.6 5.5" stroke="#1D1D1F" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M8 6.4C9 6.4 9.9 6.8 10.5 7.5" stroke="#1D1D1F" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="8" cy="10" r="1.2" fill="#1D1D1F"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12"><rect x="0.5" y="1" width="21" height="10" rx="2.5" stroke="#1D1D1F" stroke-width="0.8" fill="none"/><rect x="2" y="2.5" width="15" height="7" rx="1.2" fill="#1D1D1F"/><rect x="22.5" y="4" width="2.5" height="4" rx="1" fill="#1D1D1F" opacity="0.4"/></svg>
+      </span>
+    </div>
+
+    <div class="content" id="mainContent"></div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+<script src="../js/trip-data.js"></script>
+<script>
+(function () {
+  var D = TripData;
+  var html = '';
+
+  // SVG icons
+  var IC = {
+    chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+    back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    archive: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>',
+    restore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
+    switch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
+  };
+
+  // Header
+  html += '<div class="nav-header">' +
+    '<button class="nav-back" onclick="location.href=\'05-settings.html\'">' + IC.back + '</button>' +
+    '<div class="nav-title">旅程管理</div>' +
+  '</div>';
+
+  // Current Trip Card
+  function renderTripCard() {
+    var t = D.trip;
+    var budget = t.budget || 0;
+    var spent = D.getTotalSpent();
+    var budgetPct = budget > 0 ? Math.min(Math.round(spent / budget * 100), 100) : 0;
+    var curDay = D.getCurrentDayNumber();
+    var totalDays = D.getTotalDays();
+    var memberCount = D.members.length;
+    var perPerson = D.getPerPersonAvg();
+
+    return '<div class="trip-card">' +
+      '<div class="trip-card-top">' +
+        '<div class="trip-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>' +
+        '<div class="trip-card-info">' +
+          '<div class="trip-card-name">' + t.name + '</div>' +
+          '<div class="trip-card-meta">' +
+            '<span>' + D.formatDateShort(t.startDate) + ' — ' + D.formatDateShort(t.endDate) + '</span>' +
+            '<span>' + memberCount + '人</span>' +
+            (curDay <= totalDays ? '<span>Day' + curDay + '/' + totalDays + '</span>' : '<span>已结束</span>') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="trip-card-progress">' +
+        '<div class="trip-progress-bar"><div class="trip-progress-fill" style="width:' + budgetPct + '%"></div></div>' +
+        '<div class="trip-card-stats">' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(spent) + '</div><div class="trip-stat-label">已消费</div></div>' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(budget - spent) + '</div><div class="trip-stat-label">剩余预算</div></div>' +
+          '<div class="trip-stat"><div class="trip-stat-val">' + D.formatMoney(perPerson) + '</div><div class="trip-stat-label">人均</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  html += renderTripCard();
+
+  // Other trips
+  var allTrips = D.getTrips();
+  var activeTrips = D.getActiveTrips();
+  var archivedTrips = D.getArchivedTrips();
+  var currentId = D.getCurrentTripId();
+
+  // Active trips (excluding current)
+  var otherActiveTrips = activeTrips.filter(function(t) { return t.id !== currentId; });
+
+  if (otherActiveTrips.length > 0) {
+    html += '<div class="section"><div class="section-header">其他进行中的旅程</div><div class="section-group">';
+    otherActiveTrips.forEach(function (trip) {
+      var days = 0;
+      try { days = Math.round((new Date(trip.endDate) - new Date(trip.startDate)) / 86400000) + 1; } catch(e) {}
+      var expenseCount = trip.expenses ? trip.expenses.length : 0;
+      var memberCount = trip.members ? trip.members.length : 0;
+
+      html += '<div class="trip-item" data-trip-id="' + trip.id + '">' +
+        '<div class="trip-item-icon" style="background:var(--primary-light);color:var(--primary)">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+        '</div>' +
+        '<div class="trip-item-info">' +
+          '<div class="trip-item-name">' + trip.name + '</div>' +
+          '<div class="trip-item-desc">' + D.formatDateShort(trip.startDate) + ' — ' + D.formatDateShort(trip.endDate) + ' · ' + memberCount + '人 · ' + expenseCount + '笔</div>' +
+        '</div>' +
+        '<div class="trip-item-actions">' +
+          '<button class="trip-action-btn" data-action="switch" data-trip-id="' + trip.id + '" title="切换">' + IC.switch + '</button>' +
+          (allTrips.length > 1 ? '<button class="trip-action-btn danger" data-action="archive" data-trip-id="' + trip.id + '" title="归档">' + IC.archive + '</button>' : '') +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  // Archived trips
+  if (archivedTrips.length > 0) {
+    html += '<div class="section"><div class="section-header">已归档的旅程</div><div class="section-group">';
+    archivedTrips.forEach(function (trip) {
+      html += '<div class="trip-item" data-trip-id="' + trip.id + '">' +
+        '<div class="trip-item-icon" style="background:#F5F5F5;color:var(--muted)">' +
+          IC.archive +
+        '</div>' +
+        '<div class="trip-item-info">' +
+          '<div class="trip-item-name" style="color:var(--muted)">' + trip.name + '</div>' +
+          '<div class="trip-item-desc">已归档</div>' +
+        '</div>' +
+        '<div class="trip-item-actions">' +
+          '<button class="trip-action-btn" data-action="unarchive" data-trip-id="' + trip.id + '" title="恢复">' + IC.restore + '</button>' +
+          '<button class="trip-action-btn danger" data-action="delete" data-trip-id="' + trip.id + '" title="删除">' + IC.trash + '</button>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  // Create new trip button
+  html += '<div class="section"><div class="section-group">' +
+    '<div class="trip-item" id="createTripTrigger" style="color:var(--primary)">' +
+      '<div class="trip-item-icon" style="background:var(--primary-light);color:var(--primary)">' +
+        IC.plus +
+      '</div>' +
+      '<div class="trip-item-info"><div class="trip-item-name" style="color:var(--primary);font-weight:500">创建新旅程</div></div>' +
+    '</div>' +
+  '</div></div>';
+
+  // Create trip expandable form
+  html += '<div class="section" id="createTripPanel" style="display:none">' +
+    '<div class="section-group">' +
+      '<div class="create-trip-form">' +
+        '<div class="form-row"><div class="form-field" style="flex:2"><div class="form-label">旅程名称</div><input class="form-input" id="newTripName" type="text" placeholder="如：东京自由行5日游"></div></div>' +
+        '<div class="form-row"><div class="form-field"><div class="form-label">开始日期</div><input class="form-input" id="newTripStart" type="date"></div><div class="form-field"><div class="form-label">结束日期</div><input class="form-input" id="newTripEnd" type="date"></div></div>' +
+        '<div class="form-row"><div class="form-field" style="flex:1"><div class="form-label">预算 (元)</div><input class="form-input" id="newTripBudget" type="number" placeholder="10000"></div></div>' +
+        '<button class="form-create-btn" id="createTripBtn">创建旅程</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  // Empty state for no other trips
+  if (otherActiveTrips.length === 0 && archivedTrips.length === 0) {
+    html += '<div class="section"><div class="empty-state">' +
+      '<div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>' +
+      '<div class="empty-title">只有一个旅程</div>' +
+      '<div class="empty-desc">点击上方"创建新旅程"开始下一次旅行</div>' +
+    '</div></div>';
+  }
+
+  document.getElementById('mainContent').innerHTML = html;
+
+  // Trip action buttons
+  document.querySelectorAll('.trip-action-btn[data-action]').forEach(function(el) {
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var action = this.getAttribute('data-action');
+      var tripId = this.getAttribute('data-trip-id');
+      if (!tripId || !action) return;
+
+      if (action === 'switch') {
+        D.switchTrip(tripId);
+        location.href = '01-home.html';
+      } else if (action === 'archive') {
+        D.archiveTrip(tripId);
+        location.reload();
+      } else if (action === 'unarchive') {
+        D.unarchiveTrip(tripId);
+        location.reload();
+      } else if (action === 'delete') {
+        if (confirm('确定要删除这个旅程吗？此操作不可撤销。')) {
+          D.deleteTrip(tripId);
+          location.reload();
+        }
+      }
+    });
+  });
+
+  // Create trip trigger
+  var createTrigger = document.getElementById('createTripTrigger');
+  var createPanel = document.getElementById('createTripPanel');
+  if (createTrigger && createPanel) {
+    createTrigger.addEventListener('click', function () {
+      var isVisible = createPanel.style.display !== 'none';
+      createPanel.style.display = isVisible ? 'none' : 'block';
+      if (!isVisible) {
+        var nameInput = document.getElementById('newTripName');
+        if (nameInput) nameInput.focus();
+      }
+    });
+  }
+
+  // Create trip button
+  var createBtn = document.getElementById('createTripBtn');
+  if (createBtn) {
+    createBtn.addEventListener('click', function () {
+      var name = document.getElementById('newTripName').value.trim();
+      var startDate = document.getElementById('newTripStart').value;
+      var endDate = document.getElementById('newTripEnd').value;
+      var budget = parseInt(document.getElementById('newTripBudget').value) || 0;
+
+      if (!name) {
+        document.getElementById('newTripName').style.borderColor = 'var(--danger)';
+        return;
+      }
+      if (!startDate || !endDate) {
+        if (!startDate) document.getElementById('newTripStart').style.borderColor = 'var(--danger)';
+        if (!endDate) document.getElementById('newTripEnd').style.borderColor = 'var(--danger)';
+        return;
+      }
+
+      D.createTrip({
+        name: name,
+        startDate: startDate,
+        endDate: endDate,
+        budget: budget
+      });
+
+      location.href = '01-home.html';
+    });
+  }
+
+  // Clear validation styling on input focus
+  ['newTripName', 'newTripStart', 'newTripEnd'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('focus', function() {
+        this.style.borderColor = 'var(--primary)';
+      });
+      el.addEventListener('blur', function() {
+        this.style.borderColor = '';
+      });
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>

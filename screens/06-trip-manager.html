@@ -382,6 +382,203 @@ body {
   font-size: 13px;
 }
 
+/* Row */
+.row {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  min-height: 48px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.row:active { background: #F8F8FA; }
+
+.row + .row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 52px;
+  right: 0;
+  height: 0.5px;
+  background: var(--border);
+}
+
+.row-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.row-icon svg { width: 16px; height: 16px; }
+
+.row-content { flex: 1; min-width: 0; }
+
+.row-label {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--fg);
+}
+
+.row-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.row-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.row-detail {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.row-chevron svg { width: 14px; height: 14px; color: #C7C7CC; }
+
+/* Toggle */
+.toggle {
+  width: 50px;
+  height: 30px;
+  border-radius: 15px;
+  background: var(--toggle-off);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s;
+  flex-shrink: 0;
+  border: none;
+  padding: 0;
+}
+.toggle.on { background: var(--toggle-on); }
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: transform 0.25s;
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* Expandable Panel */
+.expand-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: #FAFAFA;
+}
+.expand-panel.open { max-height: 600px; }
+
+.expand-content { padding: 10px 16px 14px; }
+
+/* Expand toggle */
+.expand-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 500;
+  gap: 4px;
+  background: none;
+  border: none;
+  width: 100%;
+  font-family: var(--font);
+}
+.expand-toggle svg {
+  width: 14px; height: 14px;
+  transition: transform 0.25s;
+}
+.expand-toggle.open svg { transform: rotate(180deg); }
+
+/* Template grid */
+.template-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.template-card {
+  background: var(--surface);
+  border-radius: var(--r-m);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-s);
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: border-color 0.15s;
+}
+.template-card:active { border-color: var(--primary); }
+
+.template-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.template-icon svg { width: 18px; height: 18px; }
+
+.template-name { font-size: 13px; font-weight: 500; color: var(--fg); }
+.template-budget { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+/* Member type row */
+.member-type-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: var(--r-m);
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-s);
+}
+.member-type-row:last-child { margin-bottom: 0; }
+
+.mt-name { font-size: 14px; color: var(--fg); width: 50px; }
+.mt-weight { flex: 1; font-size: 13px; color: var(--fg-2); }
+.mt-weight-val { font-variant-numeric: tabular-nums; color: var(--primary); font-weight: 600; }
+
+/* Warning chips */
+.warning-chips {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.warning-chip {
+  padding: 6px 14px;
+  border-radius: var(--r-s);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+.warning-chip.active { color: #fff; }
+.warning-chip.inactive { background: #F5F5F5; color: var(--muted); }
+
 /* Home indicator */
 .home-indicator {
   position: absolute;
@@ -475,6 +672,100 @@ body {
   }
 
   html += renderTripCard();
+
+  // ── Journey-specific settings ──
+  var S = D.settings;
+
+  // Row helper
+  function row(icon, label, detail, opts) {
+    opts = opts || {};
+    var hasChevron = opts.chevron !== false && !opts.toggle && !opts.panel;
+    var cls = opts.className || '';
+    var desc = opts.desc ? '<div class="row-desc">' + opts.desc + '</div>' : '';
+    var right = '';
+    if (opts.toggle !== undefined) {
+      right = '<button class="toggle' + (opts.toggle ? ' on' : '') + '" data-key="' + opts.toggleKey + '"></button>';
+    } else if (opts.panel) {
+      right = '<button class="expand-toggle' + (opts.panelOpen ? ' open' : '') + '" data-panel="' + opts.panelId + '">' + (opts.panelOpen ? '收起' : '展开') + ' ' + IC.chevron + '</button>';
+    } else {
+      right = (detail ? '<span class="row-detail">' + detail + '</span>' : '') +
+              (hasChevron ? '<span class="row-chevron">' + IC.chevron + '</span>' : '');
+    }
+    return '<div class="row' + (opts.panel ? ' expand-trigger' : '') + ' ' + cls + '" data-panel-id="' + (opts.panelId || '') + '">' +
+      '<div class="row-icon" style="background:' + (opts.bg || 'var(--primary-light)') + ';color:' + (opts.fg || 'var(--primary)') + '">' + icon + '</div>' +
+      '<div class="row-content"><div class="row-label">' + label + '</div>' + desc + '</div>' +
+      '<div class="row-right">' + right + '</div></div>';
+  }
+
+  // Additional icons for settings
+  var IC_SETTINGS = {
+    wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1"/></svg>',
+    currency: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+    users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+    grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+    target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+    car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>'
+  };
+
+  // ── Journey Defaults ──
+  html += '<div class="section"><div class="section-header">旅程默认</div><div class="section-group">';
+  html += row(IC_SETTINGS.wallet, '默认预算', '¥' + S.defaultBudget.toLocaleString(), { chevron: true });
+  var curObj = S.currencies.find(function(c) { return c.code === S.defaultCurrency; });
+  html += row(IC_SETTINGS.currency, '默认货币', curObj ? curObj.name + ' ' + curObj.symbol : 'CNY ¥', { chevron: true });
+  html += row(IC_SETTINGS.users, '默认出行人数', S.defaultTravelers + '人', { chevron: true });
+  html += row(IC_SETTINGS.grid, '默认分摊规则', S.splitMethodLabels[S.defaultSplitRule], { chevron: true });
+  html += row(IC_SETTINGS.car, '旅行模板', '', { chevron: true, panel: true, panelId: 'templates', panelOpen: false,
+    desc: '自驾游、亲子游、情侣游…' });
+  html += '</div></div>';
+
+  // Template panel
+  html += '<div class="section"><div class="expand-panel" id="panel-templates"><div class="expand-content"><div class="template-grid">';
+  S.templates.forEach(function(t) {
+    var tIcon = IC[t.icon] || IC_SETTINGS.car;
+    var tColors = { 'road-trip': ['var(--primary-light)', 'var(--primary)'], 'family': ['var(--price-light)', 'var(--price)'],
+      'couple': ['#FCE4EC', '#C62828'], 'team': ['#E3F2FD', '#1565C0'], 'overseas': ['#E8F5E9', '#2E7D32'] };
+    var tc = tColors[t.id] || ['var(--primary-light)', 'var(--primary)'];
+    html += '<div class="template-card"><div class="template-icon" style="background:' + tc[0] + ';color:' + tc[1] + '">' + tIcon + '</div>' +
+      '<div><div class="template-name">' + t.name + '</div><div class="template-budget">¥' + t.budget.toLocaleString() + '</div></div></div>';
+  });
+  html += '</div></div></div></div>';
+
+  // ── Members & Splitting ──
+  html += '<div class="section"><div class="section-header">成员与分摊</div><div class="section-group">';
+  html += row(IC_SETTINGS.grid, '分摊方式', S.splitMethodLabels[S.defaultSplitRule], { chevron: true });
+  html += row(IC_SETTINGS.users, '成员类型', '', { chevron: true, panel: true, panelId: 'memberTypes', panelOpen: false,
+    desc: '成人、儿童、老人不同权重' });
+  html += '</div></div>';
+
+  // Member types panel
+  html += '<div class="section"><div class="expand-panel" id="panel-memberTypes"><div class="expand-content">';
+  S.memberTypes.forEach(function(mt) {
+    html += '<div class="member-type-row"><div class="mt-name">' + mt.name + '</div>' +
+      '<div class="mt-weight">权重 <span class="mt-weight-val">' + mt.weight + '</span></div>' +
+      '<button class="toggle' + (mt.enabled ? ' on' : '') + '" data-key="memberType.' + mt.id + '"></button></div>';
+  });
+  html += '</div></div></div>';
+
+  // ── Budget Management ──
+  html += '<div class="section"><div class="section-header">预算管理</div><div class="section-group">';
+  html += row(IC_SETTINGS.target, '预算模式', S.budgetModeLabels[S.budgetMode], { chevron: true });
+  html += row(IC_SETTINGS.bell, '预算预警', '', { chevron: true, panel: true, panelId: 'budgetWarning', panelOpen: false,
+    desc: '达到80%、90%或超出预算时提醒' });
+  html += '</div></div>';
+
+  // Budget warning panel
+  html += '<div class="section"><div class="expand-panel" id="panel-budgetWarning"><div class="expand-content"><div class="warning-chips">';
+  var warningLevels = [
+    { key: 'budgetWarning80', label: '80%', color: '#E8A020' },
+    { key: 'budgetWarning90', label: '90%', color: '#E05A38' },
+    { key: 'budgetWarning100', label: '100%', color: '#D93025' }
+  ];
+  warningLevels.forEach(function(w) {
+    var active = S[w.key];
+    html += '<button class="warning-chip' + (active ? ' active' : ' inactive') + '" style="' + (active ? 'background:' + w.color : '') + '" data-warning-key="' + w.key + '">' + w.label + (active ? ' 开启' : '') + '</button>';
+  });
+  html += '</div></div></div></div>';
 
   // Other trips
   var allTrips = D.getTrips();
@@ -645,6 +936,56 @@ body {
         this.style.borderColor = '';
       });
     }
+  });
+
+  // ── Settings interactions ──
+
+  // Toggle switches
+  document.querySelectorAll('.toggle[data-key]').forEach(function(el) {
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOn = this.classList.toggle('on');
+      var key = this.getAttribute('data-key');
+      // Handle nested keys
+      if (key.indexOf('memberType.') === 0) {
+        var typeId = key.replace('memberType.', '');
+        var mt = D.settings.memberTypes.find(function(m) { return m.id === typeId; });
+        if (mt) { mt.enabled = isOn; D.saveData(); }
+      } else {
+        D.updateSetting(key, isOn);
+      }
+    });
+  });
+
+  // Expand panels
+  document.querySelectorAll('.expand-trigger').forEach(function(el) {
+    el.addEventListener('click', function () {
+      var panelId = this.getAttribute('data-panel-id');
+      if (!panelId) return;
+      var panel = document.getElementById('panel-' + panelId);
+      if (!panel) return;
+      var isOpen = panel.classList.toggle('open');
+      var toggleBtn = this.querySelector('.expand-toggle');
+      if (toggleBtn) {
+        toggleBtn.classList.toggle('open', isOpen);
+        toggleBtn.innerHTML = (isOpen ? '收起' : '展开') + ' ' + IC.chevron;
+      }
+    });
+  });
+
+  // Warning chips
+  document.querySelectorAll('.warning-chip[data-warning-key]').forEach(function(el) {
+    el.addEventListener('click', function () {
+      var key = this.getAttribute('data-warning-key');
+      var current = D.getSetting(key);
+      var newVal = !current;
+      D.updateSetting(key, newVal);
+      this.classList.toggle('active', newVal);
+      this.classList.toggle('inactive', !newVal);
+      var colorMap = { budgetWarning80: '#E8A020', budgetWarning90: '#E05A38', budgetWarning100: '#D93025' };
+      this.style.background = newVal ? colorMap[key] : '';
+      this.textContent = this.textContent.replace(/ 开启$/, '') + (newVal ? ' 开启' : '');
+    });
   });
 
 })();

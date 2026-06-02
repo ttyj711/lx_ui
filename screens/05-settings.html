@@ -940,88 +940,13 @@ body {
     '</div>' +
     '<div class="trip-item-info">' +
       '<div class="trip-item-name">管理全部旅程</div>' +
-      '<div class="trip-item-desc">切换、归档、创建旅程</div>' +
+      '<div class="trip-item-desc">切换、归档、创建旅程及旅程配置</div>' +
     '</div>' +
     '<div class="trip-item-actions">' +
       '<span class="row-chevron">' + IC.chevron + '</span>' +
     '</div>' +
   '</div>';
   html += '</div></div>';
-
-  // ── 旅程默认 ──
-  html += '<div class="section"><div class="section-header">旅程默认</div><div class="section-group">';
-  html += row(IC.wallet, '默认预算', '¥' + S.defaultBudget.toLocaleString(), { chevron: true });
-  var curObj = S.currencies.find(function(c) { return c.code === S.defaultCurrency; });
-  html += row(IC.currency, '默认货币', curObj ? curObj.name + ' ' + curObj.symbol : 'CNY ¥', { chevron: true });
-  html += row(IC.users, '默认出行人数', S.defaultTravelers + '人', { chevron: true });
-  html += row(IC.grid, '默认分摊规则', S.splitMethodLabels[S.defaultSplitRule], { chevron: true });
-  html += row(IC.car, '旅行模板', '', { chevron: true, panel: true, panelId: 'templates', panelOpen: false,
-    desc: '自驾游、亲子游、情侣游…' });
-  html += '</div></div>';
-
-  // Template panel
-  html += '<div class="section"><div class="expand-panel" id="panel-templates"><div class="expand-content"><div class="template-grid">';
-  S.templates.forEach(function(t) {
-    var tIcon = IC[t.icon] || IC.car;
-    var tColors = { 'road-trip': ['var(--primary-light)', 'var(--primary)'], 'family': ['var(--price-light)', 'var(--price)'],
-      'couple': ['#FCE4EC', '#C62828'], 'team': ['#E3F2FD', '#1565C0'], 'overseas': ['#E8F5E9', '#2E7D32'] };
-    var tc = tColors[t.id] || ['var(--primary-light)', 'var(--primary)'];
-    html += '<div class="template-card"><div class="template-icon" style="background:' + tc[0] + ';color:' + tc[1] + '">' + tIcon + '</div>' +
-      '<div><div class="template-name">' + t.name + '</div><div class="template-budget">¥' + t.budget.toLocaleString() + '</div></div></div>';
-  });
-  html += '</div></div></div></div>';
-
-  // ── 成员与分摊 ──
-  html += '<div class="section"><div class="section-header">成员与分摊</div><div class="section-group">';
-  html += row(IC.grid, '分摊方式', S.splitMethodLabels[S.defaultSplitRule], { chevron: true });
-  html += row(IC.users, '成员类型', '', { chevron: true, panel: true, panelId: 'memberTypes', panelOpen: false,
-    desc: '成人、儿童、老人不同权重' });
-  html += '</div></div>';
-
-  // Member types panel
-  html += '<div class="section"><div class="expand-panel" id="panel-memberTypes"><div class="expand-content">';
-  S.memberTypes.forEach(function(mt) {
-    html += '<div class="member-type-row"><div class="mt-name">' + mt.name + '</div>' +
-      '<div class="mt-weight">权重 <span class="mt-weight-val">' + mt.weight + '</span></div>' +
-      '<button class="toggle' + (mt.enabled ? ' on' : '') + '" data-key="memberType.' + mt.id + '"></button></div>';
-  });
-  html += '</div></div></div>';
-
-  // ── 消费分类 ──
-  html += '<div class="section"><div class="section-header">消费分类</div><div class="section-group">';
-  html += row(IC.edit, '分类管理', D.categories.length + '个分类', { chevron: true, panel: true, panelId: 'categories', panelOpen: false,
-    desc: '新增、修改、删除和排序分类' });
-  html += '</div></div>';
-
-  // Categories panel
-  html += '<div class="section"><div class="expand-panel" id="panel-categories"><div class="expand-content">';
-  D.categories.forEach(function(cat) {
-    var catIcon = D.getIcon(cat.id);
-    html += '<div class="card-config"><div class="card-config-icon" style="background:' + cat.bgColor + ';color:' + cat.color + '">' + catIcon + '</div>' +
-      '<div class="card-config-label">' + cat.name + '</div>' +
-      '<button class="toggle' + (cat.visible ? ' on' : '') + '" data-key="category.' + cat.id + '"></button></div>';
-  });
-  html += '</div></div></div>';
-
-  // ── 预算管理 ──
-  html += '<div class="section"><div class="section-header">预算管理</div><div class="section-group">';
-  html += row(IC.target, '预算模式', S.budgetModeLabels[S.budgetMode], { chevron: true });
-  html += row(IC.bell, '预算预警', '', { chevron: true, panel: true, panelId: 'budgetWarning', panelOpen: false,
-    desc: '达到80%、90%或超出预算时提醒' });
-  html += '</div></div>';
-
-  // Budget warning panel
-  html += '<div class="section"><div class="expand-panel" id="panel-budgetWarning"><div class="expand-content"><div class="warning-chips">';
-  var warningLevels = [
-    { key: 'budgetWarning80', label: '80%', color: '#E8A020' },
-    { key: 'budgetWarning90', label: '90%', color: '#E05A38' },
-    { key: 'budgetWarning100', label: '100%', color: '#D93025' }
-  ];
-  warningLevels.forEach(function(w) {
-    var active = S[w.key];
-    html += '<button class="warning-chip' + (active ? ' active' : ' inactive') + '" style="' + (active ? 'background:' + w.color : '') + '" data-warning-key="' + w.key + '">' + w.label + (active ? ' 开启' : '') + '</button>';
-  });
-  html += '</div></div></div></div>';
 
   // ── 货币与汇率 ──
   html += '<div class="section"><div class="section-header">货币与汇率</div><div class="section-group">';

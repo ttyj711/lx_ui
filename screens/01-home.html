@@ -622,6 +622,7 @@ body {
   flex-shrink: 0;
 }
 .notif-panel-header h3 { font-size: 17px; font-weight: 700; color: var(--fg); }
+.notif-header-actions { display: flex; gap: 8px; }
 .notif-mark-all {
   font-size: 13px; color: var(--primary); font-weight: 500;
   background: var(--primary-light); border: none;
@@ -630,6 +631,14 @@ body {
   font-family: var(--font);
 }
 .notif-mark-all:active { opacity: 0.7; }
+.notif-clear-all {
+  font-size: 13px; color: var(--danger); font-weight: 500;
+  background: var(--danger-bg); border: none;
+  cursor: pointer; padding: 5px 12px;
+  border-radius: 12px; transition: opacity 0.15s;
+  font-family: var(--font);
+}
+.notif-clear-all:active { opacity: 0.7; }
 
 /* ── Filter Tabs ── */
 .notif-tabs {
@@ -678,7 +687,9 @@ body {
 }
 .notif-card-icon svg { width: 15px; height: 15px; }
 .notif-card-title { font-size: 14px; font-weight: 600; color: var(--fg); flex: 1; }
-.notif-card-time { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+.notif-card-time { font-size: 11px; color: var(--muted); flex-shrink: 0; text-align: right; line-height: 1.3; }
+.notif-card-time .notif-abs-time { display: block; font-size: 11px; color: var(--fg-2); font-weight: 500; }
+.notif-card-time .notif-rel-time { display: block; font-size: 10px; color: var(--muted); }
 
 .notif-card-body { padding-left: 40px; }
 
@@ -841,7 +852,10 @@ body {
       <div class="notif-panel" onclick="event.stopPropagation()">
         <div class="notif-panel-header">
           <h3>通知</h3>
-          <button class="notif-mark-all" onclick="markAllRead()">全部已读</button>
+          <div class="notif-header-actions">
+            <button class="notif-mark-all" onclick="markAllRead()">全部已读</button>
+            <button class="notif-clear-all" onclick="clearAllNotifications()">清空</button>
+          </div>
         </div>
         <div class="notif-tabs" id="notifTabs">
           <button class="notif-tab-btn active" data-filter="all">全部</button>
@@ -1022,6 +1036,13 @@ body {
     return Math.floor(delta / 86400000) + '天前';
   }
 
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    var h = d.getHours().toString().padStart(2, '0');
+    var m = d.getMinutes().toString().padStart(2, '0');
+    return h + ':' + m;
+  }
+
   // Icon SVGs per notification type
   function getNotifIconSvg(type, pct) {
     switch (type) {
@@ -1106,6 +1127,11 @@ body {
     renderNotifications();
   };
 
+  window.clearAllNotifications = function () {
+    D.clearNotifications();
+    renderNotifications();
+  };
+
   // Build a single rich card HTML per notification
   function buildCard(n) {
     var cls = n.read === false ? 'notif-card unread' : 'notif-card';
@@ -1120,7 +1146,7 @@ body {
     h += '<div class="notif-card-hd">';
     h += '<span class="notif-card-icon" style="background:' + bg + ';color:' + fg + '">' + icon + '</span>';
     h += '<span class="notif-card-title">' + n.title + '</span>';
-    h += '<span class="notif-card-time">' + fmtAgo(n.time) + '</span>';
+    h += '<span class="notif-card-time"><span class="notif-abs-time">' + fmtTime(n.time) + '</span><span class="notif-rel-time">' + fmtAgo(n.time) + '</span></span>';
     h += '</div>';
 
     // Body — type-specific

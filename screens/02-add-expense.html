@@ -156,6 +156,22 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.amount-input {
+  width: 230px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font);
+}
+
+.amount-input::-webkit-outer-spin-button,
+.amount-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
 .amount-cursor {
   width: 2px;
   height: 38px;
@@ -301,6 +317,21 @@ body {
   margin-bottom: 12px;
 }
 
+.payer-section {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-s);
+  margin-bottom: 12px;
+}
+
+.payer-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 10px;
+}
+
 .participants-header {
   display: flex;
   justify-content: space-between;
@@ -432,6 +463,33 @@ body {
 
 .submit-btn:active { transform: scale(0.97); opacity: 0.9; }
 
+.submit-btn.success {
+  background: var(--success);
+  box-shadow: 0 4px 14px rgba(52,168,83,0.26);
+}
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%) translateY(18px);
+  background: rgba(29,29,31,0.92);
+  color: #fff;
+  border-radius: 18px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 120;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* Add-member inline form */
 .add-member-form {
   display: none;
@@ -530,6 +588,7 @@ body {
     </div>
 
     <div class="content" id="mainContent"></div>
+    <div class="toast" id="toast">已保存到当前旅程</div>
 
     <div class="home-indicator"></div>
   </div>
@@ -542,6 +601,7 @@ body {
   var currentAmount = 380;
   var selectedCategory = 'food';
   var selectedMembers = D.members.map(function (m) { return m.id; });
+  var selectedPayerId = D.members[0] ? D.members[0].id : null;
   var newMemberTag = 'adult';
 
   function render() {
@@ -554,7 +614,7 @@ body {
     html += '<div class="amount-section">' +
       '<div class="amount-label">消费金额</div>' +
       '<div class="amount-display"><span class="amount-currency">¥</span>' +
-      '<span class="amount-value">' + currentAmount + '</span>' +
+      '<input class="amount-input" id="amountInput" type="number" inputmode="decimal" min="0" step="1" value="' + currentAmount + '" aria-label="消费金额" />' +
       '<span class="amount-cursor"></span></div>' +
       '<div class="amount-per-person" id="perPersonLabel">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>' +
@@ -581,13 +641,24 @@ body {
 
     html += '<div class="form-card">' +
       '<div class="form-row"><span class="form-label">地点</span>' +
-        '<input class="form-input" type="text" placeholder="输入消费地点..." />' +
+        '<input class="form-input" id="locationInput" type="text" placeholder="输入消费地点..." />' +
         '<span class="form-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>' +
       '<div class="form-row"><span class="form-label">日期</span>' +
-        '<input class="form-input" type="text" value="' + dateStr + '" />' +
+        '<input class="form-input" id="dateInput" type="text" value="' + dateStr + '" readonly />' +
         '<span class="form-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span></div>' +
       '<div class="form-row"><span class="form-label">备注</span>' +
-        '<input class="form-input" type="text" placeholder="添加备注..." /></div></div>';
+        '<input class="form-input" id="noteInput" type="text" placeholder="添加备注..." /></div></div>';
+
+    html += '<div class="payer-section">' +
+      '<div class="payer-title">付款人</div>' +
+      '<div class="participants-list">';
+    D.members.forEach(function (m) {
+      var payerSel = selectedPayerId === m.id ? ' selected' : '';
+      html += '<button class="person-chip' + payerSel + '" data-payer="' + m.id + '">' +
+        '<span class="person-avatar" style="background:' + m.color + '">' + m.name.charAt(0) + '</span>' +
+        m.name + '</button>';
+    });
+    html += '</div></div>';
 
     // Participants (dynamic from data model)
     var allSelected = selectedMembers.length === D.members.length;
@@ -630,13 +701,21 @@ body {
       '</div></div>';
 
     // Submit
-    html += '<button class="submit-btn">保存记录</button>';
+    html += '<button class="submit-btn" id="submitExpense">保存记录</button>';
 
     document.getElementById('mainContent').innerHTML = html;
     bindEvents();
   }
 
   function bindEvents() {
+    var amountInput = document.getElementById('amountInput');
+    if (amountInput) {
+      amountInput.addEventListener('input', function () {
+        currentAmount = Math.max(0, Math.round(parseFloat(amountInput.value || '0')));
+        updatePerPerson();
+      });
+    }
+
     // Category selection
     document.querySelectorAll('.category-item').forEach(function (el) {
       el.addEventListener('click', function () {
@@ -655,6 +734,14 @@ body {
         else { selectedMembers.push(mid); el.classList.add('selected'); }
         updatePerPerson();
         updateToggleText();
+      });
+    });
+
+    document.querySelectorAll('.person-chip[data-payer]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        selectedPayerId = parseInt(el.getAttribute('data-payer'));
+        document.querySelectorAll('.person-chip[data-payer]').forEach(function (p) { p.classList.remove('selected'); });
+        el.classList.add('selected');
       });
     });
 
@@ -690,6 +777,7 @@ body {
       if (!name) return;
       var newId = D.addMember(name, newMemberTag);
       selectedMembers.push(newId);
+      if (!selectedPayerId) selectedPayerId = newId;
       render();
     });
 
@@ -705,6 +793,56 @@ body {
         }
       });
     }
+
+    document.getElementById('submitExpense').addEventListener('click', function () {
+      var amount = Math.round(parseFloat(document.getElementById('amountInput').value || '0'));
+      var loc = document.getElementById('locationInput').value.trim();
+      var note = document.getElementById('noteInput').value.trim();
+      var cat = D.getCategoryById(selectedCategory);
+      if (!amount || amount <= 0) {
+        showToast('请输入有效金额');
+        return;
+      }
+      if (!selectedCategory) {
+        showToast('请选择消费分类');
+        return;
+      }
+      if (selectedMembers.length === 0) {
+        showToast('至少选择 1 位参与成员');
+        return;
+      }
+      var now = new Date();
+      var time = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+      D.addExpense({
+        cat: selectedCategory,
+        amount: amount,
+        desc: note || ((cat ? cat.name : '消费') + (loc ? ' · ' + loc : '')),
+        loc: loc,
+        date: D.dayNumToDate(D.getCurrentDayNumber()),
+        time: time,
+        p: selectedMembers.slice(),
+        payerId: selectedPayerId || selectedMembers[0]
+      });
+      var btn = document.getElementById('submitExpense');
+      btn.classList.add('success');
+      btn.textContent = '已保存';
+      showToast('已保存，统计与结算已更新');
+      setTimeout(function () {
+        currentAmount = 0;
+        selectedMembers = D.members.map(function (m) { return m.id; });
+        selectedPayerId = D.members[0] ? D.members[0].id : null;
+        render();
+      }, 900);
+    });
+  }
+
+  function showToast(text) {
+    var toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
   }
 
   function updatePerPerson() {

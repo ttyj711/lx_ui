@@ -249,6 +249,18 @@
     return JSON.parse(JSON.stringify(DEFAULTS));
   }
 
+  function ensureExpensePayers(root) {
+    if (!root || !root.trips) return root;
+    root.trips.forEach(function (trip) {
+      (trip.expenses || []).forEach(function (expense) {
+        if (!expense.payerId) {
+          expense.payerId = expense.p && expense.p.length > 0 ? expense.p[0] : (trip.members[0] && trip.members[0].id);
+        }
+      });
+    });
+    return root;
+  }
+
   function migrateData(d) {
     if (!d) return null;
     // Old format: has 'trip' at root level but no 'trips' array
@@ -267,16 +279,16 @@
         dashboardMetrics: d.dashboardMetrics || defaultDashboardMetrics(),
         referenceDate: d.referenceDate || null
       };
-      return {
+      return ensureExpensePayers({
         currentTripId: trip.id,
         trips: [trip],
         settings: d.settings || cloneDefaults().settings
-      };
+      });
     }
-    return d;
+    return ensureExpensePayers(d);
   }
 
-  var data = migrateData(loadData()) || cloneDefaults();
+  var data = ensureExpensePayers(migrateData(loadData()) || cloneDefaults());
 
   // ── Current trip resolver ───────────────────────────────────
   function ct() {
@@ -398,6 +410,64 @@
     return Math.round(total);
   }
 
+  function getMemberPaid(memberId, upToDay) {
+    var list = upToDay
+      ? ct().expenses.filter(function (e) { return dayOfTrip(e.date) <= upToDay; })
+      : ct().expenses;
+    var total = 0;
+    list.forEach(function (e) {
+      if ((e.payerId || (e.p && e.p[0])) === memberId) total += e.amount;
+    });
+    return Math.round(total);
+  }
+
+  function getMemberSettlementRows(upToDay) {
+    return ct().members.map(function (m) {
+      var paid = getMemberPaid(m.id, upToDay);
+      var owed = getMemberSpending(m.id, upToDay);
+      return {
+        id: m.id,
+        name: m.name,
+        color: m.color,
+        tag: m.tag,
+        paid: paid,
+        owed: owed,
+        balance: Math.round(paid - owed),
+        count: getMemberExpenseCount(m.id, upToDay),
+        absent: getMemberAbsentCount(m.id, upToDay)
+      };
+    });
+  }
+
+  function getSettlementSuggestions(upToDay) {
+    var rows = getMemberSettlementRows(upToDay);
+    var receivers = rows.filter(function (r) { return r.balance > 0; }).map(function (r) {
+      return Object.assign({}, r, { left: r.balance });
+    }).sort(function (a, b) { return b.left - a.left; });
+    var payers = rows.filter(function (r) { return r.balance < 0; }).map(function (r) {
+      return Object.assign({}, r, { left: Math.abs(r.balance) });
+    }).sort(function (a, b) { return b.left - a.left; });
+    var suggestions = [];
+    var pi = 0, ri = 0;
+    while (pi < payers.length && ri < receivers.length) {
+      var amount = Math.min(payers[pi].left, receivers[ri].left);
+      if (amount >= 1) {
+        suggestions.push({
+          fromId: payers[pi].id,
+          from: payers[pi].name,
+          toId: receivers[ri].id,
+          to: receivers[ri].name,
+          amount: Math.round(amount)
+        });
+      }
+      payers[pi].left -= amount;
+      receivers[ri].left -= amount;
+      if (payers[pi].left <= 1) pi++;
+      if (receivers[ri].left <= 1) ri++;
+    }
+    return suggestions;
+  }
+
   function getMemberExpenseCount(memberId, upToDay) {
     var list = upToDay
       ? ct().expenses.filter(function (e) { return dayOfTrip(e.date) <= upToDay; })
@@ -468,6 +538,10 @@
         absent: getMemberAbsentCount(m.id, upToDay)
       };
     }).sort(function (a, b) { return b.total - a.total; });
+  }
+
+  function getExpenseById(id) {
+    return ct().expenses.find(function (e) { return e.id === id; });
   }
 
   // ── Computed: highlights ────────────────────────────────────
@@ -633,9 +707,30 @@
     var t = ct();
     var id = t.expenses.length > 0 ? Math.max.apply(null, t.expenses.map(function (e) { return e.id; })) + 1 : 1;
     expense.id = id;
+    if (!expense.payerId) expense.payerId = expense.p && expense.p.length > 0 ? expense.p[0] : (t.members[0] && t.members[0].id);
     t.expenses.push(expense);
     saveData(data);
     return id;
+  }
+
+  function updateExpense(id, patch) {
+    var expense = getExpenseById(id);
+    if (!expense) return false;
+    Object.assign(expense, patch);
+    if (!expense.payerId) expense.payerId = expense.p && expense.p.length > 0 ? expense.p[0] : (ct().members[0] && ct().members[0].id);
+    saveData(data);
+    return true;
+  }
+
+  function deleteExpense(id) {
+    var t = ct();
+    var before = t.expenses.length;
+    t.expenses = t.expenses.filter(function (e) { return e.id !== id; });
+    if (t.expenses.length !== before) {
+      saveData(data);
+      return true;
+    }
+    return false;
   }
 
   function updateTripConfig(config) {
@@ -887,37 +982,19 @@
 
     // ── Settlement reminder ──────────────────────────────
     if (curDay >= 2 && trip.expenses.length >= 5) {
-      var memberBalances = trip.members.map(function (m) {
-        var paid = getMemberSpending(m.id);
-        var fairShare = getPerPersonAvg();
-        return { id: m.id, name: m.name, color: m.color, paid: paid, fairShare: fairShare, balance: paid - fairShare };
-      });
-      var creditors = memberBalances.filter(function (b) { return b.balance < -50; }).sort(function (a, b) { return a.balance - b.balance; });
-      var debtors = memberBalances.filter(function (b) { return b.balance > 50; }).sort(function (a, b) { return b.balance - b.balance; });
-      if (creditors.length > 0 || debtors.length > 0) {
-        var settlements = [];
-        var cIdx = 0, dIdx = 0;
-        var cList = creditors.slice(), dList = debtors.slice();
-        while (cIdx < cList.length && dIdx < dList.length) {
-          var cAmt = Math.abs(cList[cIdx].balance);
-          var dAmt = dList[dIdx].balance;
-          var settleAmt = Math.min(cAmt, dAmt);
-          if (settleAmt >= 50) {
-            settlements.push({ from: dList[dIdx].name, to: cList[cIdx].name, amount: Math.round(settleAmt) });
+      var settlements = getSettlementSuggestions();
+      if (settlements.length > 0) {
+        notifs.push({
+          id: 'settlement_' + trip.id,
+          type: 'settlement_reminder', category: 'alert',
+          title: '结算提醒',
+          message: '有人还有待结算金额，建议提前确认',
+          time: new Date().toISOString(), read: false,
+          data: {
+            settlements: settlements.slice(0, 3),
+            totalUnsettled: Math.round(settlements.reduce(function (s, item) { return s + item.amount; }, 0))
           }
-          if (cAmt <= dAmt) { dList[dIdx].balance -= settleAmt; cIdx++; }
-          else { cList[cIdx].balance += settleAmt; dIdx++; }
-        }
-        if (settlements.length > 0) {
-          notifs.push({
-            id: 'settlement_' + trip.id,
-            type: 'settlement_reminder', category: 'alert',
-            title: '结算提醒',
-            message: '有人还有欠款，建议提前结算',
-            time: new Date().toISOString(), read: false,
-            data: { settlements: settlements.slice(0, 3), totalUnsettled: Math.round(debtors.reduce(function (s, d) { return s + d.balance; }, 0)) }
-          });
-        }
+        });
       }
     }
 
@@ -1031,11 +1108,15 @@
     getMemberSpending: getMemberSpending,
     getMemberExpenseCount: getMemberExpenseCount,
     getMemberAbsentCount: getMemberAbsentCount,
+    getMemberPaid: getMemberPaid,
+    getMemberSettlementRows: getMemberSettlementRows,
+    getSettlementSuggestions: getSettlementSuggestions,
     getCategoryBreakdown: getCategoryBreakdown,
     getDailyBreakdown: getDailyBreakdown,
     getMemberRanking: getMemberRanking,
     getHighlights: getHighlights,
     getExpensesForDay: getExpensesForDay,
+    getExpenseById: getExpenseById,
     dayNumToDate: dayNumToDate,
     dayNumToName: dayNumToName,
 
@@ -1072,6 +1153,8 @@
     removeCategory: removeCategory,
     toggleCategoryVisibility: toggleCategoryVisibility,
     addExpense: addExpense,
+    updateExpense: updateExpense,
+    deleteExpense: deleteExpense,
     updateTripConfig: updateTripConfig,
     updateDashboardMetrics: updateDashboardMetrics,
     updateSetting: updateSetting,

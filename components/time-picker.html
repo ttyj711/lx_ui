@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>时间选择控件</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #1677FF;
+      --primary-light: #E6F4FF;
+      --text-primary: #1F2329;
+      --text-secondary: #646A73;
+      --text-tertiary: #8F959E;
+      --border: #E5E6EB;
+      --bg: #F7F8FA;
+      --white: #FFFFFF;
+      --today: #FFF7E6;
+      --selected: #1677FF;
+      --range-bg: #E6F4FF;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: #F0F2F5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .picker-container {
+      width: 375px;
+      background: var(--white);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    /* 控件头部 */
+    .picker-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .picker-cancel {
+      font-size: 16px;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .picker-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .picker-confirm {
+      font-size: 16px;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      padding: 4px 8px;
+    }
+
+    /* 月份切换 */
+    .month-selector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+    }
+
+    .month-nav {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .month-nav:hover {
+      background: var(--bg);
+      color: var(--text-primary);
+    }
+
+    .month-nav.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .current-month {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* 日历视图 */
+    .calendar {
+      padding: 0 20px 16px;
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 12px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+      padding: 8px 0;
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: var(--text-primary);
+      cursor: pointer;
+      border-radius: 50%;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .day:hover:not(.disabled):not(.selected):not(.in-range) {
+      background: var(--bg);
+    }
+
+    .day.disabled {
+      color: var(--text-tertiary);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .day.today {
+      background: var(--today);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .day.selected {
+      background: var(--selected);
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .day.in-range {
+      background: var(--range-bg);
+      border-radius: 0;
+    }
+
+    .day.range-start {
+      border-radius: 50% 0 0 50%;
+      background: var(--range-bg);
+    }
+
+    .day.range-start.selected {
+      background: var(--selected);
+    }
+
+    .day.range-end {
+      border-radius: 0 50% 50% 0;
+      background: var(--range-bg);
+    }
+
+    .day.range-end.selected {
+      background: var(--selected);
+    }
+
+    .day.today.selected {
+      background: var(--selected);
+      color: var(--white);
+    }
+
+    /* 时间选择 */
+    .time-section {
+      border-top: 1px solid var(--border);
+      padding: 16px 20px;
+    }
+
+    .time-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .time-picker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .time-unit {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-value {
+      width: 80px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--bg);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .time-value:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .time-separator {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+    }
+
+    /* 快捷选择 */
+    .quick-select {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .quick-option {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--bg);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-option:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .quick-option.active {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    /* 提示文本 */
+    .picker-hint {
+      padding: 12px 20px;
+      background: var(--bg);
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    /* 演示模式切换 */
+    .demo-switcher {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .demo-btn {
+      padding: 8px 16px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .demo-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .demo-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--white);
+    }
+  </style>
+</head>
+<body>
+  <div style="display: flex; flex-direction: column; gap: 24px;">
+    <!-- 演示模式切换 -->
+    <div class="demo-switcher">
+      <button class="demo-btn active" onclick="setMode('single')">单日期选择</button>
+      <button class="demo-btn" onclick="setMode('range')">日期范围选择</button>
+      <button class="demo-btn" onclick="setMode('datetime')">日期+时间</button>
+      <button class="demo-btn" onclick="setMode('time')">仅时间</button>
+    </div>
+
+    <!-- 时间选择控件 -->
+    <div class="picker-container" id="picker">
+      <!-- 头部 -->
+      <div class="picker-header">
+        <button class="picker-cancel">取消</button>
+        <div class="picker-title" id="pickerTitle">选择日期</div>
+        <button class="picker-confirm">确定</button>
+      </div>
+
+      <!-- 月份选择器 -->
+      <div class="month-selector">
+        <button class="month-nav" onclick="prevMonth()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M12.5 5L7.5 10L12.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="current-month" id="currentMonth">2024年1月</div>
+        <button class="month-nav" onclick="nextMonth()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 日历视图 -->
+      <div class="calendar" id="calendarView">
+        <div class="weekdays">
+          <div class="weekday">日</div>
+          <div class="weekday">一</div>
+          <div class="weekday">二</div>
+          <div class="weekday">三</div>
+          <div class="weekday">四</div>
+          <div class="weekday">五</div>
+          <div class="weekday">六</div>
+        </div>
+        <div class="days" id="daysContainer"></div>
+      </div>
+
+      <!-- 时间选择 -->
+      <div class="time-section" id="timeSection" style="display: none;">
+        <div class="time-label">选择时间</div>
+        <div class="time-picker">
+          <div class="time-unit">
+            <div class="time-value" id="hourValue" onclick="adjustTime('hour', 1)">09</div>
+          </div>
+          <div class="time-separator">:</div>
+          <div class="time-unit">
+            <div class="time-value" id="minuteValue" onclick="adjustTime('minute', 1)">30</div>
+          </div>
+        </div>
+        <div class="quick-select">
+          <button class="quick-option" onclick="setQuickTime(0, 0)">00:00</button>
+          <button class="quick-option" onclick="setQuickTime(12, 0)">12:00</button>
+          <button class="quick-option active" onclick="setQuickTime(9, 30)">09:30</button>
+          <button class="quick-option" onclick="setQuickTime(18, 0)">18:00</button>
+        </div>
+      </div>
+
+      <!-- 仅时间模式 -->
+      <div class="time-section" id="timeOnlySection" style="display: none;">
+        <div class="time-label">选择时间</div>
+        <div class="time-picker">
+          <div class="time-unit">
+            <div class="time-value" id="hourValueOnly">14</div>
+          </div>
+          <div class="time-separator">:</div>
+          <div class="time-unit">
+            <div class="time-value" id="minuteValueOnly">00</div>
+          </div>
+        </div>
+        <div class="quick-select">
+          <button class="quick-option" onclick="setQuickTimeOnly(8, 0)">08:00</button>
+          <button class="quick-option" onclick="setQuickTimeOnly(12, 0)">12:00</button>
+          <button class="quick-option active" onclick="setQuickTimeOnly(14, 0)">14:00</button>
+          <button class="quick-option" onclick="setQuickTimeOnly(18, 0)">18:00</button>
+        </div>
+      </div>
+
+      <!-- 提示 -->
+      <div class="picker-hint" id="pickerHint">点击日期进行选择</div>
+    </div>
+  </div>
+
+  <script>
+    // 状态管理
+    let currentMode = 'single';
+    let currentDate = new Date();
+    let selectedDate = null;
+    let rangeStart = null;
+    let rangeEnd = null;
+    let selectedHour = 9;
+    let selectedMinute = 30;
+
+    // 模式切换
+    function setMode(mode) {
+      currentMode = mode;
+
+      // 更新按钮状态
+      document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // 重置状态
+      selectedDate = null;
+      rangeStart = null;
+      rangeEnd = null;
+
+      // 更新UI
+      const pickerTitle = document.getElementById('pickerTitle');
+      const calendarView = document.getElementById('calendarView');
+      const monthSelector = document.querySelector('.month-selector');
+      const timeSection = document.getElementById('timeSection');
+      const timeOnlySection = document.getElementById('timeOnlySection');
+      const pickerHint = document.getElementById('pickerHint');
+
+      switch (mode) {
+        case 'single':
+          pickerTitle.textContent = '选择日期';
+          calendarView.style.display = 'block';
+          monthSelector.style.display = 'flex';
+          timeSection.style.display = 'none';
+          timeOnlySection.style.display = 'none';
+          pickerHint.textContent = '点击日期进行选择';
+          break;
+
+        case 'range':
+          pickerTitle.textContent = '选择日期范围';
+          calendarView.style.display = 'block';
+          monthSelector.style.display = 'flex';
+          timeSection.style.display = 'none';
+          timeOnlySection.style.display = 'none';
+          pickerHint.textContent = '点击选择起始日期和结束日期';
+          break;
+
+        case 'datetime':
+          pickerTitle.textContent = '选择日期和时间';
+          calendarView.style.display = 'block';
+          monthSelector.style.display = 'flex';
+          timeSection.style.display = 'block';
+          timeOnlySection.style.display = 'none';
+          pickerHint.textContent = '选择日期后设置具体时间';
+          break;
+
+        case 'time':
+          pickerTitle.textContent = '选择时间';
+          calendarView.style.display = 'none';
+          monthSelector.style.display = 'none';
+          timeSection.style.display = 'none';
+          timeOnlySection.style.display = 'block';
+          pickerHint.textContent = '点击或快捷选择时间';
+          break;
+      }
+
+      renderCalendar();
+    }
+
+    // 渲染日历
+    function renderCalendar() {
+      const container = document.getElementById('daysContainer');
+      container.innerHTML = '';
+
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      // 更新月份标题
+      document.getElementById('currentMonth').textContent = `${year}年${month + 1}月`;
+
+      // 获取当月第一天和最后一天
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      // 获取当月第一天是星期几
+      const startWeekday = firstDay.getDay();
+
+      // 今天的日期
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // 填充空白
+      for (let i = 0; i < startWeekday; i++) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'day disabled';
+        container.appendChild(emptyDiv);
+      }
+
+      // 填充日期
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'day';
+        dateDiv.textContent = day;
+
+        const dateObj = new Date(year, month, day);
+        dateObj.setHours(0, 0, 0, 0);
+
+        // 判断是否是今天
+        if (dateObj.getTime() === today.getTime()) {
+          dateDiv.classList.add('today');
+        }
+
+        // 判断是否禁用
+        if (dateObj < today && currentMode !== 'range') {
+          dateDiv.classList.add('disabled');
+        }
+
+        // 判断是否选中
+        if (selectedDate && dateObj.getTime() === selectedDate.getTime()) {
+          dateDiv.classList.add('selected');
+        }
+
+        // 范围选择模式
+        if (currentMode === 'range') {
+          if (rangeStart && dateObj.getTime() === rangeStart.getTime()) {
+            dateDiv.classList.add('range-start', 'selected');
+          }
+          if (rangeEnd && dateObj.getTime() === rangeEnd.getTime()) {
+            dateDiv.classList.add('range-end', 'selected');
+          }
+          if (rangeStart && rangeEnd && dateObj > rangeStart && dateObj < rangeEnd) {
+            dateDiv.classList.add('in-range');
+          }
+        }
+
+        // 点击事件
+        dateDiv.addEventListener('click', () => selectDate(dateObj));
+
+        container.appendChild(dateDiv);
+      }
+    }
+
+    // 选择日期
+    function selectDate(date) {
+      if (currentMode === 'range') {
+        if (!rangeStart || (rangeStart && rangeEnd)) {
+          // 开始新选择
+          rangeStart = date;
+          rangeEnd = null;
+          document.getElementById('pickerHint').textContent = '请选择结束日期';
+        } else {
+          // 选择结束日期
+          if (date >= rangeStart) {
+            rangeEnd = date;
+            document.getElementById('pickerHint').textContent =
+              `已选: ${rangeStart.getMonth() + 1}月${rangeStart.getDate()}日 - ${rangeEnd.getMonth() + 1}月${rangeEnd.getDate()}日`;
+          } else {
+            // 反向选择
+            rangeEnd = rangeStart;
+            rangeStart = date;
+            document.getElementById('pickerHint').textContent =
+              `已选: ${rangeStart.getMonth() + 1}月${rangeStart.getDate()}日 - ${rangeEnd.getMonth() + 1}月${rangeEnd.getDate()}日`;
+          }
+        }
+      } else {
+        selectedDate = date;
+        document.getElementById('pickerHint').textContent =
+          `已选: ${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      }
+
+      renderCalendar();
+    }
+
+    // 上一月
+    function prevMonth() {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    }
+
+    // 下一月
+    function nextMonth() {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    }
+
+    // 调整时间
+    function adjustTime(unit, delta) {
+      if (unit === 'hour') {
+        selectedHour = (selectedHour + delta) % 24;
+        if (selectedHour < 0) selectedHour = 23;
+        document.getElementById('hourValue').textContent = String(selectedHour).padStart(2, '0');
+      } else {
+        selectedMinute = (selectedMinute + delta * 5) % 60;
+        if (selectedMinute < 0) selectedMinute = 55;
+        document.getElementById('minuteValue').textContent = String(selectedMinute).padStart(2, '0');
+      }
+    }
+
+    // 快捷时间
+    function setQuickTime(hour, minute) {
+      selectedHour = hour;
+      selectedMinute = minute;
+      document.getElementById('hourValue').textContent = String(hour).padStart(2, '0');
+      document.getElementById('minuteValue').textContent = String(minute).padStart(2, '0');
+
+      // 更新快捷按钮状态
+      document.querySelectorAll('#timeSection .quick-option').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // 快捷时间(仅时间模式)
+    function setQuickTimeOnly(hour, minute) {
+      document.getElementById('hourValueOnly').textContent = String(hour).padStart(2, '0');
+      document.getElementById('minuteValueOnly').textContent = String(minute).padStart(2, '0');
+
+      // 更新快捷按钮状态
+      document.querySelectorAll('#timeOnlySection .quick-option').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // 初始化
+    renderCalendar();
+  </script>
+</body>
+</html>

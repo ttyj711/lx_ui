@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>移动端时间选择器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --primary: #1677FF;
+      --primary-light: #E6F4FF;
+      --text-primary: #1F2329;
+      --text-secondary: #646A73;
+      --text-tertiary: #8F959E;
+      --border: #E5E6EB;
+      --bg: #F7F8FA;
+      --white: #FFFFFF;
+      --today: #FFF7E6;
+      --selected: #1677FF;
+      --range-bg: #E6F4FF;
+      --shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: #F0F2F5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* 触发按钮 */
+    .trigger-area {
+      text-align: center;
+    }
+
+    .trigger-btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 14px 24px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 16px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .trigger-btn:active {
+      transform: scale(0.98);
+      background: var(--bg);
+    }
+
+    .trigger-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--white);
+    }
+
+    .trigger-btn.primary:active {
+      background: #0958D9;
+    }
+
+    /* 遮罩层 */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+
+    .overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* 底部弹出容器 */
+    .picker-popup {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border-radius: 24px 24px 0 0;
+      box-shadow: var(--shadow);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1001;
+      max-height: 90vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .picker-popup.show {
+      transform: translateY(0);
+    }
+
+    /* 拖拽指示条 */
+    .drag-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 12px auto;
+      cursor: grab;
+    }
+
+    /* 头部 */
+    .picker-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--white);
+      z-index: 10;
+    }
+
+    .picker-cancel {
+      font-size: 16px;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    .picker-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .picker-confirm {
+      font-size: 16px;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      padding: 8px 12px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* 月份切换 */
+    .month-selector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+    }
+
+    .month-nav {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      background: var(--bg);
+    }
+
+    .month-nav:active {
+      background: var(--primary-light);
+      color: var(--primary);
+      transform: scale(0.95);
+    }
+
+    .month-nav.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .current-month {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* 日历视图 */
+    .calendar {
+      padding: 0 16px 16px;
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 12px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+      padding: 8px 0;
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--text-primary);
+      cursor: pointer;
+      border-radius: 50%;
+      transition: all 0.2s;
+      position: relative;
+      min-height: 44px;
+    }
+
+    .day:active:not(.disabled) {
+      transform: scale(0.9);
+    }
+
+    .day.disabled {
+      color: var(--text-tertiary);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .day.today {
+      background: var(--today);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .day.selected {
+      background: var(--selected);
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .day.in-range {
+      background: var(--range-bg);
+      border-radius: 0;
+    }
+
+    .day.range-start {
+      border-radius: 50% 0 0 50%;
+      background: var(--range-bg);
+    }
+
+    .day.range-start.selected {
+      background: var(--selected);
+    }
+
+    .day.range-end {
+      border-radius: 0 50% 50% 0;
+      background: var(--range-bg);
+    }
+
+    .day.range-end.selected {
+      background: var(--selected);
+    }
+
+    .day.today.selected {
+      background: var(--selected);
+      color: var(--white);
+    }
+
+    /* 滚动选择器 */
+    .scroll-picker {
+      padding: 20px 16px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .scroll-picker-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .scroll-picker-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px;
+      position: relative;
+    }
+
+    .scroll-column {
+      flex: 1;
+      max-width: 120px;
+      height: 200px;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .scroll-column::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scroll-item {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      scroll-snap-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .scroll-item.selected {
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 24px;
+    }
+
+    .scroll-column::before,
+    .scroll-column::after {
+      content: '';
+      display: block;
+      height: 78px;
+    }
+
+    .separator {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin: 0 8px;
+    }
+
+    /* 快捷选择 */
+    .quick-select {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .quick-option {
+      padding: 12px 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      background: var(--white);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quick-option:active {
+      transform: scale(0.95);
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .quick-option.active {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    /* 提示文本 */
+    .picker-hint {
+      padding: 16px 20px;
+      background: var(--white);
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    /* 安全区域适配 */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .picker-popup {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      .picker-hint {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      }
+    }
+
+    /* 小屏适配 */
+    @media (max-width: 375px) {
+      .calendar {
+        padding: 0 12px 12px;
+      }
+
+      .day {
+        font-size: 15px;
+        min-height: 40px;
+      }
+
+      .weekday {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 触发按钮 -->
+  <div class="trigger-area">
+    <button class="trigger-btn" onclick="showPicker('single')">单日期选择</button>
+    <button class="trigger-btn" onclick="showPicker('range')">日期范围选择</button>
+    <button class="trigger-btn primary" onclick="showPicker('datetime')">日期+时间选择</button>
+    <button class="trigger-btn" onclick="showPicker('time')">仅时间选择</button>
+  </div>
+
+  <!-- 遮罩层 -->
+  <div class="overlay" id="overlay" onclick="hidePicker()"></div>
+
+  <!-- 弹出选择器 -->
+  <div class="picker-popup" id="pickerPopup">
+    <div class="drag-handle"></div>
+
+    <!-- 头部 -->
+    <div class="picker-header">
+      <button class="picker-cancel" onclick="hidePicker()">取消</button>
+      <div class="picker-title" id="pickerTitle">选择日期</div>
+      <button class="picker-confirm" onclick="confirmSelection()">确定</button>
+    </div>
+
+    <!-- 月份选择器 -->
+    <div class="month-selector" id="monthSelector">
+      <button class="month-nav" onclick="prevMonth()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 5L7.5 10L12.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="current-month" id="currentMonth">2024年1月</div>
+      <button class="month-nav" onclick="nextMonth()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 日历视图 -->
+    <div class="calendar" id="calendarView">
+      <div class="weekdays">
+        <div class="weekday">日</div>
+        <div class="weekday">一</div>
+        <div class="weekday">二</div>
+        <div class="weekday">三</div>
+        <div class="weekday">四</div>
+        <div class="weekday">五</div>
+        <div class="weekday">六</div>
+      </div>
+      <div class="days" id="daysContainer"></div>
+    </div>
+
+    <!-- 时间滚动选择器 -->
+    <div class="scroll-picker" id="scrollPicker" style="display: none;">
+      <div class="scroll-picker-label">选择时间</div>
+      <div class="scroll-picker-container">
+        <div class="scroll-column" id="hourColumn"></div>
+        <div class="separator">:</div>
+        <div class="scroll-column" id="minuteColumn"></div>
+      </div>
+      <div class="quick-select">
+        <button class="quick-option" onclick="setQuickTime(8, 0)">08:00</button>
+        <button class="quick-option" onclick="setQuickTime(12, 0)">12:00</button>
+        <button class="quick-option active" onclick="setQuickTime(14, 0)">14:00</button>
+        <button class="quick-option" onclick="setQuickTime(18, 0)">18:00</button>
+      </div>
+    </div>
+
+    <!-- 提示 -->
+    <div class="picker-hint" id="pickerHint">点击日期进行选择</div>
+  </div>
+
+  <script>
+    // 状态管理
+    let currentMode = 'single';
+    let currentDate = new Date();
+    let selectedDate = null;
+    let rangeStart = null;
+    let rangeEnd = null;
+    let selectedHour = 14;
+    let selectedMinute = 0;
+
+    // 显示选择器
+    function showPicker(mode) {
+      currentMode = mode;
+
+      // 重置状态
+      selectedDate = null;
+      rangeStart = null;
+      rangeEnd = null;
+
+      // 更新UI
+      const pickerTitle = document.getElementById('pickerTitle');
+      const calendarView = document.getElementById('calendarView');
+      const monthSelector = document.getElementById('monthSelector');
+      const scrollPicker = document.getElementById('scrollPicker');
+      const pickerHint = document.getElementById('pickerHint');
+
+      switch (mode) {
+        case 'single':
+          pickerTitle.textContent = '选择日期';
+          calendarView.style.display = 'block';
+          monthSelector.style.display = 'flex';
+          scrollPicker.style.display = 'none';
+          pickerHint.textContent = '点击日期进行选择';
+          break;
+
+        case 'range':
+          pickerTitle.textContent = '选择日期范围';
+          calendarView.style.display = 'block';
+          monthSelector.style.display = 'flex';
+          scrollPicker.style.display = 'none';
+          pickerHint.textContent = '点击选择起始日期和结束日期';
+          break;
+
+        case 'datetime':
+          pickerTitle.textContent = '选择日期和时间';
+          calendarView.style.display = 'block';
+          monthSelector.style.display = 'flex';
+          scrollPicker.style.display = 'block';
+          pickerHint.textContent = '选择日期后设置具体时间';
+          break;
+
+        case 'time':
+          pickerTitle.textContent = '选择时间';
+          calendarView.style.display = 'none';
+          monthSelector.style.display = 'none';
+          scrollPicker.style.display = 'block';
+          pickerHint.textContent = '滚动选择时间';
+          initScrollPicker();
+          break;
+      }
+
+      renderCalendar();
+
+      // 显示弹窗
+      document.getElementById('overlay').classList.add('show');
+      document.getElementById('pickerPopup').classList.add('show');
+    }
+
+    // 隐藏选择器
+    function hidePicker() {
+      document.getElementById('overlay').classList.remove('show');
+      document.getElementById('pickerPopup').classList.remove('show');
+    }
+
+    // 确认选择
+    function confirmSelection() {
+      let result = '';
+
+      switch (currentMode) {
+        case 'single':
+          if (selectedDate) {
+            result = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+          }
+          break;
+
+        case 'range':
+          if (rangeStart && rangeEnd) {
+            result = `${rangeStart.getMonth() + 1}月${rangeStart.getDate()}日 - ${rangeEnd.getMonth() + 1}月${rangeEnd.getDate()}日`;
+          }
+          break;
+
+        case 'datetime':
+          if (selectedDate) {
+            result = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')} ${String(selectedHour).padStart(2, '0')}:${String(selectedMinute).padStart(2, '0')}`;
+          }
+          break;
+
+        case 'time':
+          result = `${String(selectedHour).padStart(2, '0')}:${String(selectedMinute).padStart(2, '0')}`;
+          break;
+      }
+
+      alert(`已选择: ${result || '未选择'}`);
+      hidePicker();
+    }
+
+    // 渲染日历
+    function renderCalendar() {
+      const container = document.getElementById('daysContainer');
+      container.innerHTML = '';
+
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      // 更新月份标题
+      document.getElementById('currentMonth').textContent = `${year}年${month + 1}月`;
+
+      // 获取当月第一天和最后一天
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      // 获取当月第一天是星期几
+      const startWeekday = firstDay.getDay();
+
+      // 今天的日期
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // 填充空白
+      for (let i = 0; i < startWeekday; i++) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'day disabled';
+        container.appendChild(emptyDiv);
+      }
+
+      // 填充日期
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'day';
+        dateDiv.textContent = day;
+
+        const dateObj = new Date(year, month, day);
+        dateObj.setHours(0, 0, 0, 0);
+
+        // 判断是否是今天
+        if (dateObj.getTime() === today.getTime()) {
+          dateDiv.classList.add('today');
+        }
+
+        // 判断是否禁用
+        if (dateObj < today && currentMode !== 'range') {
+          dateDiv.classList.add('disabled');
+        }
+
+        // 判断是否选中
+        if (selectedDate && dateObj.getTime() === selectedDate.getTime()) {
+          dateDiv.classList.add('selected');
+        }
+
+        // 范围选择模式
+        if (currentMode === 'range') {
+          if (rangeStart && dateObj.getTime() === rangeStart.getTime()) {
+            dateDiv.classList.add('range-start', 'selected');
+          }
+          if (rangeEnd && dateObj.getTime() === rangeEnd.getTime()) {
+            dateDiv.classList.add('range-end', 'selected');
+          }
+          if (rangeStart && rangeEnd && dateObj > rangeStart && dateObj < rangeEnd) {
+            dateDiv.classList.add('in-range');
+          }
+        }
+
+        // 点击事件
+        dateDiv.addEventListener('click', () => selectDate(dateObj));
+
+        container.appendChild(dateDiv);
+      }
+    }
+
+    // 选择日期
+    function selectDate(date) {
+      if (currentMode === 'range') {
+        if (!rangeStart || (rangeStart && rangeEnd)) {
+          // 开始新选择
+          rangeStart = date;
+          rangeEnd = null;
+          document.getElementById('pickerHint').textContent = '请选择结束日期';
+        } else {
+          // 选择结束日期
+          if (date >= rangeStart) {
+            rangeEnd = date;
+            document.getElementById('pickerHint').textContent =
+              `已选: ${rangeStart.getMonth() + 1}月${rangeStart.getDate()}日 - ${rangeEnd.getMonth() + 1}月${rangeEnd.getDate()}日`;
+          } else {
+            // 反向选择
+            rangeEnd = rangeStart;
+            rangeStart = date;
+            document.getElementById('pickerHint').textContent =
+              `已选: ${rangeStart.getMonth() + 1}月${rangeStart.getDate()}日 - ${rangeEnd.getMonth() + 1}月${rangeEnd.getDate()}日`;
+          }
+        }
+      } else {
+        selectedDate = date;
+        document.getElementById('pickerHint').textContent =
+          `已选: ${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      }
+
+      renderCalendar();
+    }
+
+    // 上一月
+    function prevMonth() {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    }
+
+    // 下一月
+    function nextMonth() {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    }
+
+    // 初始化滚动选择器
+    function initScrollPicker() {
+      const hourColumn = document.getElementById('hourColumn');
+      const minuteColumn = document.getElementById('minuteColumn');
+
+      hourColumn.innerHTML = '';
+      minuteColumn.innerHTML = '';
+
+      // 填充小时
+      for (let h = 0; h < 24; h++) {
+        const item = document.createElement('div');
+        item.className = 'scroll-item';
+        item.textContent = String(h).padStart(2, '0');
+        item.dataset.value = h;
+        if (h === selectedHour) item.classList.add('selected');
+        item.addEventListener('click', () => selectHour(h));
+        hourColumn.appendChild(item);
+      }
+
+      // 填充分钟
+      for (let m = 0; m < 60; m += 5) {
+        const item = document.createElement('div');
+        item.className = 'scroll-item';
+        item.textContent = String(m).padStart(2, '0');
+        item.dataset.value = m;
+        if (m === selectedMinute) item.classList.add('selected');
+        item.addEventListener('click', () => selectMinute(m));
+        minuteColumn.appendChild(item);
+      }
+
+      // 滚动到选中位置
+      setTimeout(() => {
+        const selectedHourItem = hourColumn.querySelector(`[data-value="${selectedHour}"]`);
+        const selectedMinuteItem = minuteColumn.querySelector(`[data-value="${selectedMinute}"]`);
+
+        if (selectedHourItem) {
+          selectedHourItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        if (selectedMinuteItem) {
+          selectedMinuteItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
+      // 添加滚动监听
+      hourColumn.addEventListener('scroll', debounce(() => {
+        const scrollTop = hourColumn.scrollTop;
+        const itemHeight = 44;
+        const centerIndex = Math.round(scrollTop / itemHeight);
+        const hour = hourColumn.children[centerIndex]?.dataset.value;
+        if (hour !== undefined) selectHour(parseInt(hour));
+      }, 100));
+
+      minuteColumn.addEventListener('scroll', debounce(() => {
+        const scrollTop = minuteColumn.scrollTop;
+        const itemHeight = 44;
+        const centerIndex = Math.round(scrollTop / itemHeight);
+        const minute = minuteColumn.children[centerIndex]?.dataset.value;
+        if (minute !== undefined) selectMinute(parseInt(minute));
+      }, 100));
+    }
+
+    // 选择小时
+    function selectHour(hour) {
+      selectedHour = hour;
+      document.querySelectorAll('#hourColumn .scroll-item').forEach(item => {
+        item.classList.toggle('selected', parseInt(item.dataset.value) === hour);
+      });
+    }
+
+    // 选择分钟
+    function selectMinute(minute) {
+      selectedMinute = minute;
+      document.querySelectorAll('#minuteColumn .scroll-item').forEach(item => {
+        item.classList.toggle('selected', parseInt(item.dataset.value) === minute);
+      });
+    }
+
+    // 快捷时间
+    function setQuickTime(hour, minute) {
+      selectedHour = hour;
+      selectedMinute = minute;
+
+      // 更新滚动选择器
+      initScrollPicker();
+
+      // 更新快捷按钮状态
+      document.querySelectorAll('.quick-option').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // 防抖函数
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+  </script>
+</body>
+</html>
